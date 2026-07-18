@@ -1,0 +1,58 @@
+﻿@model BinIT2WinIT.Models.SystemConfiguration
+
+@{
+    ViewBag.Title = "Details";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>SystemConfiguration</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.ConfigKey)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ConfigKey)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ConfigValue)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ConfigValue)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Description)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Description)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.UpdatedDate)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.UpdatedDate)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.UpdatedBy)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.UpdatedBy)
+        </dd>
+
+    </dl>
+</div>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { id = Model.ConfigId }) |
+    @Html.ActionLink("Back to List", "Index")
+</p>

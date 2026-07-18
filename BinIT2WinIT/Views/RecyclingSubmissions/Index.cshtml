@@ -1,0 +1,93 @@
+﻿@model IEnumerable<BinIT2WinIT.Models.RecyclingSubmission>
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.DropOffPoint.Name)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.MaterialType.Name)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Resident.UserId)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.VerifyingOfficer.UserId)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Weight)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.SubmissionDate)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Status)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.OfficerNotes)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.VerifiedDate)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.IsFlagged)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.FlagReason)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.DropOffPoint.Name)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.MaterialType.Name)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Resident.UserId)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.VerifyingOfficer.UserId)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Weight)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.SubmissionDate)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Status)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.OfficerNotes)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.VerifiedDate)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.IsFlagged)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.FlagReason)
+        </td>
+        <td>
+            @Html.ActionLink("Edit", "Edit", new { id=item.SubmissionId }) |
+            @Html.ActionLink("Details", "Details", new { id=item.SubmissionId }) |
+            @Html.ActionLink("Delete", "Delete", new { id=item.SubmissionId })
+        </td>
+    </tr>
+}
+
+</table>

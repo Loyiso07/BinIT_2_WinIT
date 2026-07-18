@@ -35,5 +35,7 @@ namespace SmartRecycling.Data
         {
             return new ApplicationDbContext();
         }
+
+        public System.Data.Entity.DbSet<BinIT2WinIT.Models.ApplicationUser> ApplicationUsers { get; set; }
     }
 }

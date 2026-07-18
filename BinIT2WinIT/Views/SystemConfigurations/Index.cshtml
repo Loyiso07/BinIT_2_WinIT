@@ -1,0 +1,57 @@
+﻿@model IEnumerable<BinIT2WinIT.Models.SystemConfiguration>
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.ConfigKey)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.ConfigValue)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Description)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.UpdatedDate)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.UpdatedBy)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.ConfigKey)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.ConfigValue)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Description)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.UpdatedDate)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.UpdatedBy)
+        </td>
+        <td>
+            @Html.ActionLink("Edit", "Edit", new { id=item.ConfigId }) |
+            @Html.ActionLink("Details", "Details", new { id=item.ConfigId }) |
+            @Html.ActionLink("Delete", "Delete", new { id=item.ConfigId })
+        </td>
+    </tr>
+}
+
+</table>

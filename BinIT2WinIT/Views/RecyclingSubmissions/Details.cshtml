@@ -1,0 +1,106 @@
+﻿@model BinIT2WinIT.Models.RecyclingSubmission
+
+@{
+    ViewBag.Title = "Details";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>RecyclingSubmission</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.DropOffPoint.Name)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.DropOffPoint.Name)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.MaterialType.Name)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.MaterialType.Name)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Resident.UserId)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Resident.UserId)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.VerifyingOfficer.UserId)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.VerifyingOfficer.UserId)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Weight)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Weight)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.SubmissionDate)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.SubmissionDate)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Status)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Status)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.OfficerNotes)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.OfficerNotes)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.VerifiedDate)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.VerifiedDate)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.IsFlagged)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.IsFlagged)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.FlagReason)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.FlagReason)
+        </dd>
+
+    </dl>
+</div>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { id = Model.SubmissionId }) |
+    @Html.ActionLink("Back to List", "Index")
+</p>
