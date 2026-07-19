@@ -1,0 +1,51 @@
+﻿@model IEnumerable<BinIT2WinIT.Models.PointsRate>
+
+@{
+    ViewBag.Title = "Points Rates";
+}
+
+<div class="container mt-4">
+    <h2><i class="fas fa-coins"></i> Points Rates</h2>
+
+    <div class="mb-3">
+        @Html.ActionLink("Add New Rate", "CreatePointsRate", "Admin", null, new { @class = "btn btn-success" })
+    </div>
+
+    <table class="table table-striped table-bordered">
+        <thead class="bg-dark text-white">
+            <tr>
+                <th>Material Type</th>
+                <th>Points Per Kg</th>
+                <th>Effective Date</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var rate in Model)
+            {
+                <tr>
+                    <td>@rate.MaterialType.Name</td>
+                    <td>@rate.PointsPerKg</td>
+                    <td>@rate.EffectiveDate.ToShortDateString()</td>
+                    <td>
+                        @if (rate.IsActive)
+                        {
+                            <span class="badge bg-success">Active</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Inactive</span>
+                        }
+                    </td>
+                    <td>
+                        @if (rate.IsActive)
+                        {
+                            @Html.ActionLink("Deactivate", "DeactivateRate", "Admin", new { id = rate.PointsRateId }, new { @class = "btn btn-danger btn-sm" })
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

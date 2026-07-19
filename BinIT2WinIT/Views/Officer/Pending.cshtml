@@ -1,0 +1,76 @@
+﻿@model List<BinIT2WinIT.Models.RecyclingSubmission>
+
+@{
+    ViewBag.Title = "Pending Submissions";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-4">
+    <h2><i class="fas fa-clock text-warning"></i> Pending Submissions</h2>
+    <hr />
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered">
+                <thead class="bg-dark text-white">
+                    <tr>
+                        <th>Resident</th>
+                        <th>Material</th>
+                        <th>Weight (kg)</th>
+                        <th>Date Submitted</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var submission in Model)
+                    {
+                        <tr>
+                            <td>@submission.Resident?.FullName</td>
+                            <td>@submission.MaterialType?.Name</td>
+                            <td>@submission.Weight.ToString("0.0")</td>
+                            <td>@submission.SubmissionDate.ToShortDateString()</td>
+                            <td>
+                                @using (Html.BeginForm("Confirm", "Officer", FormMethod.Post, new { style = "display:inline;" }))
+                                {
+                                    @Html.AntiForgeryToken()
+                                    @Html.Hidden("submissionId", submission.SubmissionId)
+                                    <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Confirm this submission?')">
+                                        <i class="fas fa-check"></i> Confirm
+                                    </button>
+                                }
+                                @using (Html.BeginForm("Reject", "Officer", FormMethod.Post, new { style = "display:inline;" }))
+                                {
+                                    @Html.AntiForgeryToken()
+                                    @Html.Hidden("submissionId", submission.SubmissionId)
+                                    <input type="text" name="reason" placeholder="Reason" class="form-control form-control-sm d-inline" style="width:120px;" required />
+                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Reject this submission?')">
+                                        <i class="fas fa-times"></i> Reject
+                                    </button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-success">
+            <i class="fas fa-check-circle"></i> No pending submissions. Great job!
+        </div>
+    }
+
+    <div class="mt-3">
+        @Html.ActionLink("← Back to Dashboard", "Dashboard", "Officer", null, new { @class = "btn btn-secondary" })
+    </div>
+</div>
