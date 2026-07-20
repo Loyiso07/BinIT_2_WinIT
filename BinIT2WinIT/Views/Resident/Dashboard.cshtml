@@ -1,0 +1,143 @@
+﻿@model BinIT2WinIT.Models.Resident
+
+@{
+    ViewBag.Title = "Resident Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2><i class="fas fa-home text-success"></i> Welcome, @Model.FullName!</h2>
+            <hr />
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card bg-success text-white shadow">
+                <div class="card-body text-center">
+                    <i class="fas fa-star fa-2x mb-2"></i>
+                    <h3>@Model.PointsBalance</h3>
+                    <p class="mb-0">Total Points</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-info text-white shadow">
+                <div class="card-body text-center">
+                    <i class="fas fa-users fa-2x mb-2"></i>
+                    <h3>@Model.InfluencerPoints</h3>
+                    <p class="mb-0">Influencer Points</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-warning text-dark shadow">
+                <div class="card-body text-center">
+                    <i class="fas fa-leaf fa-2x mb-2"></i>
+                    <h3>@Model.TotalCO2Saved.ToString("0.0") kg</h3>
+                    <p class="mb-0">CO2 Saved</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Cards -->
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card h-100 shadow">
+                <div class="card-body text-center">
+                    <i class="fas fa-recycle fa-3x text-success"></i>
+                    <h5 class="mt-3">Submit Recycling</h5>
+                    <p class="text-muted">Log your recycling activity and earn points</p>
+                    @Html.ActionLink("Submit Now", "SubmitRecycling", "Resident", null, new { @class = "btn btn-success" })
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 shadow">
+                <div class="card-body text-center">
+                    <i class="fas fa-history fa-3x text-primary"></i>
+                    <h5 class="mt-3">Points History</h5>
+                    <p class="text-muted">View all your points transactions</p>
+                    @Html.ActionLink("View History", "PointsHistory", "Resident", null, new { @class = "btn btn-primary" })
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 shadow">
+                <div class="card-body text-center">
+                    <i class="fas fa-share-alt fa-3x text-warning"></i>
+                    <h5 class="mt-3">Referral Code</h5>
+                    <p class="text-muted">Share to earn influencer points!</p>
+                    <div class="bg-light p-2 rounded">
+                        <strong><code>@Model.ReferralCode</code></strong>
+                    </div>
+                    @Html.ActionLink("View Details", "InfluencerPoints", "Resident", null, new { @class = "btn btn-warning mt-2" })
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaderboard Section -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-dark text-white">
+                    <i class="fas fa-trophy"></i> Community Leaderboard
+                </div>
+                <div class="card-body">
+                    <p>See how you compare to other recyclers in your community.</p>
+                    @Html.ActionLink("View Full Leaderboard", "Leaderboard", "Resident", null, new { @class = "btn btn-outline-success" })
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity Section (Optional) -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-secondary text-white">
+                    <i class="fas fa-clock"></i> Recent Activity
+                </div>
+                <div class="card-body">
+                    @if (Model.Submissions != null && Model.Submissions.Any())
+                    {
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Material</th>
+                                    <th>Weight (kg)</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var submission in Model.Submissions.OrderByDescending(s => s.SubmissionDate).Take(5))
+                                {
+                                    <tr>
+                                        <td>@submission.SubmissionDate.ToShortDateString()</td>
+                                        <td>@submission.MaterialType?.Name ?? "Unknown"</td>
+                                        <td>@submission.Weight.ToString("0.0")</td>
+                                        <td>
+                                            <span class="badge @(submission.Status == "Confirmed" ? "bg-success" : submission.Status == "Pending" ? "bg-warning" : "bg-danger")">
+                                                @submission.Status
+                                            </span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                    else
+                    {
+                        <p class="text-muted">No recent recycling activity. Start recycling today!</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
