@@ -1,0 +1,40 @@
+﻿@model BinIT2WinIT.Models.CollectionOfficer
+
+@{
+    ViewBag.Title = "Officer Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-4">
+    <h2><i class="fas fa-clipboard-check text-primary"></i> Officer Dashboard</h2>
+    <p>Welcome, @Model.FullName!</p>
+    <hr />
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card bg-warning text-dark shadow">
+                <div class="card-body text-center">
+                    <h3>@ViewBag.PendingCount</h3>
+                    <p>Pending Submissions</p>
+                    @Html.ActionLink("View Pending", "Pending", "Officer", null, new { @class = "btn btn-dark" })
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-success text-white shadow">
+                <div class="card-body text-center">
+                    <h3>@ViewBag.VerifiedToday</h3>
+                    <p>Verified Today</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-info text-white shadow">
+                <div class="card-body text-center">
+                    <h3>@Model.AssignedDropOffPoint?.Name ?? "Not Assigned"</h3>
+                    <p>Assigned Drop-Off Point</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
