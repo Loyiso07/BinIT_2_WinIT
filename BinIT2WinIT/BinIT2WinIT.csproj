@@ -264,9 +264,11 @@
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\Administrator.cs" />
     <Compile Include="Models\ApplicationUser.cs" />
+    <Compile Include="Models\AssignOfficerViewModel.cs" />
     <Compile Include="Models\CO2Factor.cs" />
     <Compile Include="Models\CollectionEvent.cs" />
     <Compile Include="Models\CollectionOfficer.cs" />
+    <Compile Include="Models\CreateOfficerViewModel.cs" />
     <Compile Include="Models\DropOffPoint.cs" />
     <Compile Include="Models\MaterialType.cs" />
     <Compile Include="Models\PointsRate.cs" />
@@ -301,6 +303,7 @@
     <Content Include="Content\bootstrap.min.css" />
     <Content Include="Content\bootstrap.rtl.css" />
     <Content Include="Content\bootstrap.rtl.min.css" />
+    <Content Include="Content\dark-mode.css" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
@@ -315,6 +318,7 @@
       <DependentUpon>Dockerfile</DependentUpon>
     </None>
     <None Include="Scripts\jquery-3.7.0.intellisense.js" />
+    <Content Include="Scripts\dark-mode.js" />
     <Content Include="Scripts\jquery-3.7.0.js" />
     <Content Include="Scripts\jquery-3.7.0.min.js" />
     <Content Include="Scripts\jquery-3.7.0.slim.js" />
@@ -354,6 +358,13 @@
     <Content Include="Views\Resident\Leaderboard.cshtml" />
     <Content Include="Views\Resident\InfluencerPoints.cshtml" />
     <Content Include="Views\Officer\Statistics.cshtml" />
+    <Content Include="Views\Admin\AssignOfficer.cshtml" />
+    <Content Include="Views\Admin\Officers.cshtml" />
+    <Content Include="Views\Admin\DropOffPoints.cshtml" />
+    <Content Include="Views\Admin\CreateOfficer.cshtml" />
+    <Content Include="Views\Admin\Communities.cshtml" />
+    <Content Include="Views\Admin\OfficerDeployment.cshtml" />
+    <Content Include="Views\Admin\CommunityLeaderboard.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

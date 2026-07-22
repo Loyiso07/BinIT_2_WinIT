@@ -107,12 +107,13 @@ namespace BinIT2WinIT.Controllers
         // ============================================================
         // GET: Officer/Pending
         // ============================================================
+        // GET: Officer/Pending
         public async Task<ActionResult> Pending()
         {
             var submissions = await _context.RecyclingSubmissions
-                .Include(s => s.Resident)
-                .Include(s => s.MaterialType)
-                .Include(s => s.DropOffPoint)
+                .Include(s => s.Resident)          // ← IMPORTANT!
+                .Include(s => s.MaterialType)      // ← IMPORTANT!
+                .Include(s => s.DropOffPoint)      // ← IMPORTANT!
                 .Where(s => s.Status == "Pending")
                 .OrderBy(s => s.SubmissionDate)
                 .ToListAsync();

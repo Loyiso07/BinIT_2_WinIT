@@ -1,55 +1,84 @@
-﻿@{
+﻿@model BinIT2WinIT.Models.Administrator
+
+@{
     ViewBag.Title = "Admin Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 <div class="container mt-4">
-    <h2><i class="fas fa-cog text-success"></i> Administrator Dashboard</h2>
+    <h2><i class="fas fa-cog text-warning"></i> Administrator Dashboard</h2>
+    <p>Welcome, <strong>@Model.FullName</strong>!</p>
+    <hr />
 
+    <!-- Stats Cards -->
     <div class="row mt-4">
-        <div class="col-md-4">
-            <div class="card bg-primary text-white">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white shadow">
                 <div class="card-body text-center">
+                    <i class="fas fa-users fa-2x mb-2"></i>
                     <h3>@ViewBag.TotalResidents</h3>
-                    <p>Total Residents</p>
+                    <p class="mb-0">Total Residents</p>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card bg-success text-white">
+        <div class="col-md-3">
+            <div class="card bg-success text-white shadow">
                 <div class="card-body text-center">
+                    <i class="fas fa-recycle fa-2x mb-2"></i>
                     <h3>@ViewBag.TotalSubmissions</h3>
-                    <p>Total Submissions</p>
+                    <p class="mb-0">Total Submissions</p>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card bg-warning text-dark">
+        <div class="col-md-3">
+            <div class="card bg-info text-white shadow">
                 <div class="card-body text-center">
+                    <i class="fas fa-coins fa-2x mb-2"></i>
                     <h3>@ViewBag.TotalPoints</h3>
-                    <p>Total Points Awarded</p>
+                    <p class="mb-0">Total Points</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark shadow">
+                <div class="card-body text-center">
+                    <i class="fas fa-clock fa-2x mb-2"></i>
+                    <h3>@ViewBag.PendingSubmissions</h3>
+                    <p class="mb-0">Pending</p>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Quick Actions -->
     <div class="row mt-4">
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header bg-dark text-white">
-                    <i class="fas fa-coins"></i> Points Rates
-                </div>
-                <div class="card-body">
-                    @Html.ActionLink("Manage Points Rates", "PointsRates", "Admin", null, new { @class = "btn btn-outline-success" })
+        <div class="col-md-4">
+            <div class="card h-100 shadow">
+                <div class="card-body text-center">
+                    <i class="fas fa-user-tie fa-3x text-primary"></i>
+                    <h5 class="mt-3">Manage Officers</h5>
+                    <p class="text-muted">View and assign Collection Officers</p>
+                    @Html.ActionLink("Go to Officers", "Officers", "Admin", null, new { @class = "btn btn-primary" })
                 </div>
             </div>
         </div>
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header bg-dark text-white">
-                    <i class="fas fa-users"></i> Users
+        <div class="col-md-4">
+            <div class="card h-100 shadow">
+                <div class="card-body text-center">
+                    <i class="fas fa-map-pin fa-3x text-success"></i>
+                    <h5 class="mt-3">Drop-Off Points</h5>
+                    <p class="text-muted">Manage recycling locations</p>
+                    @Html.ActionLink("Manage Locations", "DropOffPoints", "Admin", null, new { @class = "btn btn-success" })
                 </div>
-                <div class="card-body">
-                    @Html.ActionLink("Manage Users", "Users", "Admin", null, new { @class = "btn btn-outline-primary" })
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 shadow">
+                <div class="card-body text-center">
+                    <i class="fas fa-coins fa-3x text-warning"></i>
+                    <h5 class="mt-3">Points Rates</h5>
+                    <p class="text-muted">Configure recycling rewards</p>
+                    @Html.ActionLink("Manage Rates", "PointsRates", "Admin", null, new { @class = "btn btn-warning" })
                 </div>
             </div>
         </div>

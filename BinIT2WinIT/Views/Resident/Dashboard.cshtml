@@ -120,7 +120,8 @@
                                 {
                                     <tr>
                                         <td>@submission.SubmissionDate.ToShortDateString()</td>
-                                        <td>(@submission.MaterialType?.Name ?? "Unknown")</td>
+                                        <!-- ✅ FIXED: Use .Name property -->
+                                        <td>@(submission.MaterialType?.Name ?? "Unknown")</td>
                                         <td>@submission.Weight.ToString("0.0")</td>
                                         <td>
                                             <span class="badge @(submission.Status == "Confirmed" ? "bg-success" : submission.Status == "Pending" ? "bg-warning" : "bg-danger")">
