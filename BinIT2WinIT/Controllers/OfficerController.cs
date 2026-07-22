@@ -1,11 +1,12 @@
-﻿using BinIT2WinIT.Models;
-using BinIT2WinIT.Data;
-using Microsoft.AspNet.Identity;
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
+using Microsoft.AspNet.Identity;
+using BinIT2WinIT.Data;
+using BinIT2WinIT.Models;
 
 namespace BinIT2WinIT.Controllers
 {
@@ -14,11 +15,19 @@ namespace BinIT2WinIT.Controllers
     {
         private readonly ApplicationDbContext _context = new ApplicationDbContext();
 
+        // ============================================================
         // GET: Officer/Dashboard
+        // ============================================================
         public async Task<ActionResult> Dashboard()
         {
             var userId = User.Identity.GetUserId();
 
+            if (string.IsNullOrEmpty(userId))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            // FIND OFFICER OR CREATE ONE
             var officer = await _context.CollectionOfficers
                 .Include(o => o.AssignedDropOffPoint)
                 .FirstOrDefaultAsync(o => o.UserId == userId);
@@ -26,23 +35,20 @@ namespace BinIT2WinIT.Controllers
             if (officer == null)
             {
                 var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+
                 if (user == null)
                 {
                     return RedirectToAction("Login", "Account");
                 }
 
-                // ✅ Get first active drop-off point
-                var defaultDropOffPoint = await _context.DropOffPoints
-                    .FirstOrDefaultAsync(d => d.IsActive);
-
+                // ✅ CREATE OFFICER WITH ALL REQUIRED FIELDS
                 officer = new CollectionOfficer
                 {
                     UserId = userId,
-                    FullName = user.FullName ?? "Collection Officer",
+                    FullName = user.FullName ?? user.UserName ?? "Unknown User",
                     PhoneNumber = user.PhoneNumber ?? "000-000-0000",
                     EmployeeNumber = GenerateEmployeeNumber(),
-                    Department = "Collection",
-                    DropOffPointId = defaultDropOffPoint?.DropOffPointId ?? 1,
+                    Department = "Waste Management",
                     IsActive = true,
                     CreatedAt = DateTime.Now
                 };
@@ -52,89 +58,94 @@ namespace BinIT2WinIT.Controllers
                 try
                 {
                     await _context.SaveChangesAsync();
+                    System.Diagnostics.Debug.WriteLine("✅ Officer created successfully!");
                 }
                 catch (System.Data.Entity.Validation.DbEntityValidationException ex)
                 {
-                    var errorMessages = ex.EntityValidationErrors
-                        .SelectMany(x => x.ValidationErrors)
-                        .Select(x => $"Property: {x.PropertyName}, Error: {x.ErrorMessage}");
-                    var fullErrorMessage = string.Join("; ", errorMessages);
-                    System.Diagnostics.Debug.WriteLine($"Validation Error: {fullErrorMessage}");
-                    throw;
-                }
+                    // ✅ LOG DETAILED ERRORS
+                    var errors = new List<string>();
+                    foreach (var validationErrors in ex.EntityValidationErrors)
+                    {
+                        foreach (var validationError in validationErrors.ValidationErrors)
+                        {
+                            errors.Add($"Property: '{validationError.PropertyName}' - Error: {validationError.ErrorMessage}");
+                        }
+                    }
 
-                // ✅ Reload officer with included navigation property
-                officer = await _context.CollectionOfficers
-                    .Include(o => o.AssignedDropOffPoint)
-                    .FirstOrDefaultAsync(o => o.UserId == userId);
+                    System.Diagnostics.Debug.WriteLine("❌ Validation Errors:");
+                    foreach (var error in errors)
+                    {
+                        System.Diagnostics.Debug.WriteLine(error);
+                    }
+
+                    TempData["ErrorMessage"] = "Failed to create officer profile: " + string.Join("; ", errors);
+                    return RedirectToAction("Index", "Home");
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"❌ Error creating officer: {ex.Message}");
+                    TempData["ErrorMessage"] = "An error occurred while creating your profile. Please contact administrator.";
+                    return RedirectToAction("Index", "Home");
+                }
             }
 
-            // ✅ Get statistics
+            // ✅ COUNT PENDING SUBMISSIONS
             var pendingCount = await _context.RecyclingSubmissions
-                .CountAsync(s => s.Status == "Pending");
+                .Where(s => s.Status == "Pending")
+                .CountAsync();
 
             var verifiedToday = await _context.RecyclingSubmissions
-                .CountAsync(s => s.Status == "Confirmed" &&
-                    DbFunctions.TruncateTime(s.VerifiedDate) == DateTime.Today);
+                .Where(s => s.Status == "Confirmed" && s.VerifiedDate != null && DbFunctions.TruncateTime(s.VerifiedDate) == DateTime.Today)
+                .CountAsync();
 
-            // ✅ Calculate total points awarded today
-            var pointsAwardedToday = await _context.PointsTransactions
-                .Where(t => t.Type == "Earn" &&
-                    DbFunctions.TruncateTime(t.TransactionDate) == DateTime.Today)
-                .SumAsync(t => (int?)t.Amount) ?? 0;
-
-            // ✅ Pass data to view
             ViewBag.PendingCount = pendingCount;
             ViewBag.VerifiedToday = verifiedToday;
-            ViewBag.PointsAwardedToday = pointsAwardedToday;
 
             return View(officer);
         }
 
+        // ============================================================
         // GET: Officer/Pending
+        // ============================================================
         public async Task<ActionResult> Pending()
         {
-            var userId = User.Identity.GetUserId();
-            var officer = await _context.CollectionOfficers
-                .Include(o => o.AssignedDropOffPoint)
-                .FirstOrDefaultAsync(o => o.UserId == userId);
-
-            if (officer == null)
-            {
-                TempData["ErrorMessage"] = "Officer profile not found.";
-                return RedirectToAction("Dashboard", "Officer");
-            }
-
             var submissions = await _context.RecyclingSubmissions
                 .Include(s => s.Resident)
                 .Include(s => s.MaterialType)
                 .Include(s => s.DropOffPoint)
-                .Where(s => s.Status == "Pending" && s.DropOffPointId == officer.DropOffPointId)
+                .Where(s => s.Status == "Pending")
                 .OrderBy(s => s.SubmissionDate)
                 .ToListAsync();
-
-            // ✅ Pass officer data for display
-            ViewBag.OfficerName = officer.FullName;
-            ViewBag.DropOffPointName = officer.AssignedDropOffPoint?.Name ?? "Not Assigned";
 
             return View(submissions);
         }
 
+        // ============================================================
         // POST: Officer/Confirm
+        // ============================================================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Confirm(int submissionId)
         {
             var userId = User.Identity.GetUserId();
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                TempData["ErrorMessage"] = "Please log in first.";
+                return RedirectToAction("Login", "Account");
+            }
+
+            // ✅ GET OFFICER
             var officer = await _context.CollectionOfficers
                 .FirstOrDefaultAsync(o => o.UserId == userId);
 
             if (officer == null)
             {
-                TempData["ErrorMessage"] = "Officer profile not found.";
-                return RedirectToAction("Dashboard");
+                TempData["ErrorMessage"] = "Officer profile not found. Please contact administrator.";
+                return RedirectToAction("Pending");
             }
 
+            // ✅ GET SUBMISSION
             var submission = await _context.RecyclingSubmissions
                 .Include(s => s.Resident)
                 .Include(s => s.MaterialType)
@@ -146,24 +157,25 @@ namespace BinIT2WinIT.Controllers
                 return RedirectToAction("Pending");
             }
 
-            // ✅ Get points rate
+            // ✅ CHECK IF ALREADY VERIFIED
+            if (submission.Status != "Pending")
+            {
+                TempData["ErrorMessage"] = $"This submission has already been {submission.Status.ToLower()}.";
+                return RedirectToAction("Pending");
+            }
+
+            // ✅ GET POINTS RATE
             var pointsRate = await _context.PointsRates
                 .FirstOrDefaultAsync(p => p.MaterialTypeId == submission.MaterialTypeId && p.IsActive);
 
             var points = pointsRate != null ? (int)(submission.Weight * pointsRate.PointsPerKg) : 0;
 
-            // ✅ Get CO2 factor
-            var co2Factor = await _context.CO2Factors
-                .FirstOrDefaultAsync(c => c.MaterialTypeId == submission.MaterialTypeId && c.IsActive);
-
-            var co2Saved = co2Factor != null ? submission.Weight * co2Factor.CO2SavedPerKg : 0;
-
-            // ✅ Update submission
+            // ✅ UPDATE SUBMISSION
             submission.Status = "Confirmed";
             submission.VerifiedBy = officer.OfficerId;
             submission.VerifiedDate = DateTime.Now;
 
-            // ✅ Create points transaction
+            // ✅ CREATE POINTS TRANSACTION
             var transaction = new PointsTransaction
             {
                 ResidentId = submission.ResidentId,
@@ -175,29 +187,127 @@ namespace BinIT2WinIT.Controllers
             };
             _context.PointsTransactions.Add(transaction);
 
-            // ✅ Update resident balance
-            var resident = await _context.Residents
-                .FirstOrDefaultAsync(r => r.ResidentId == submission.ResidentId);
-
+            // ✅ UPDATE RESIDENT BALANCE
+            var resident = await _context.Residents.FindAsync(submission.ResidentId);
             if (resident != null)
             {
                 resident.PointsBalance += points;
-                resident.TotalCO2Saved += co2Saved;
+                // TODO: Calculate CO2 based on material type
+                resident.TotalCO2Saved += submission.Weight * 1.0;
             }
 
-            await _context.SaveChangesAsync();
-
-            TempData["SuccessMessage"] = $"Submission confirmed! {resident?.FullName ?? "Resident"} awarded {points} points.";
+            // ✅ SAVE WITH ERROR HANDLING
+            try
+            {
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = $"✅ Submission confirmed! {resident?.FullName ?? "Resident"} awarded {points} points.";
+            }
+            catch (System.Data.Entity.Validation.DbEntityValidationException ex)
+            {
+                var errors = new List<string>();
+                foreach (var validationErrors in ex.EntityValidationErrors)
+                {
+                    foreach (var validationError in validationErrors.ValidationErrors)
+                    {
+                        errors.Add($"Property: '{validationError.PropertyName}' - Error: {validationError.ErrorMessage}");
+                    }
+                }
+                TempData["ErrorMessage"] = "Validation failed: " + string.Join("; ", errors);
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "An error occurred: " + ex.Message;
+            }
 
             return RedirectToAction("Pending");
         }
 
+        // ============================================================
         // POST: Officer/Reject
+        // ============================================================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Reject(int submissionId, string reason)
         {
             var userId = User.Identity.GetUserId();
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                TempData["ErrorMessage"] = "Please log in first.";
+                return RedirectToAction("Login", "Account");
+            }
+
+            // ✅ GET OFFICER
+            var officer = await _context.CollectionOfficers
+                .FirstOrDefaultAsync(o => o.UserId == userId);
+
+            if (officer == null)
+            {
+                TempData["ErrorMessage"] = "Officer profile not found. Please contact administrator.";
+                return RedirectToAction("Pending");
+            }
+
+            // ✅ GET SUBMISSION
+            var submission = await _context.RecyclingSubmissions
+                .FindAsync(submissionId);
+
+            if (submission == null)
+            {
+                TempData["ErrorMessage"] = "Submission not found.";
+                return RedirectToAction("Pending");
+            }
+
+            // ✅ CHECK IF ALREADY VERIFIED
+            if (submission.Status != "Pending")
+            {
+                TempData["ErrorMessage"] = $"This submission has already been {submission.Status.ToLower()}.";
+                return RedirectToAction("Pending");
+            }
+
+            // ✅ UPDATE SUBMISSION
+            submission.Status = "Rejected";
+            submission.VerifiedBy = officer.OfficerId;
+            submission.VerifiedDate = DateTime.Now;
+            submission.OfficerNotes = string.IsNullOrEmpty(reason) ? "No reason provided" : reason;
+
+            // ✅ SAVE WITH ERROR HANDLING
+            try
+            {
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "❌ Submission rejected successfully.";
+            }
+            catch (System.Data.Entity.Validation.DbEntityValidationException ex)
+            {
+                var errors = new List<string>();
+                foreach (var validationErrors in ex.EntityValidationErrors)
+                {
+                    foreach (var validationError in validationErrors.ValidationErrors)
+                    {
+                        errors.Add($"Property: '{validationError.PropertyName}' - Error: {validationError.ErrorMessage}");
+                    }
+                }
+                TempData["ErrorMessage"] = "Validation failed: " + string.Join("; ", errors);
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "An error occurred: " + ex.Message;
+            }
+
+            return RedirectToAction("Pending");
+        }
+
+        // ============================================================
+        // GET: Officer/Statistics
+        // ============================================================
+        public async Task<ActionResult> Statistics()
+        {
+            var userId = User.Identity.GetUserId();
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
             var officer = await _context.CollectionOfficers
                 .FirstOrDefaultAsync(o => o.UserId == userId);
 
@@ -207,35 +317,51 @@ namespace BinIT2WinIT.Controllers
                 return RedirectToAction("Dashboard");
             }
 
-            var submission = await _context.RecyclingSubmissions
-                .FirstOrDefaultAsync(s => s.SubmissionId == submissionId);
+            // ✅ GET STATISTICS
+            var totalVerified = await _context.RecyclingSubmissions
+                .Where(s => s.VerifiedBy == officer.OfficerId && s.Status == "Confirmed")
+                .CountAsync();
 
-            if (submission == null)
-            {
-                TempData["ErrorMessage"] = "Submission not found.";
-                return RedirectToAction("Pending");
-            }
+            var totalRejected = await _context.RecyclingSubmissions
+                .Where(s => s.VerifiedBy == officer.OfficerId && s.Status == "Rejected")
+                .CountAsync();
 
-            submission.Status = "Rejected";
-            submission.VerifiedBy = officer.OfficerId;
-            submission.VerifiedDate = DateTime.Now;
-            submission.OfficerNotes = reason;
+            var totalWeightVerified = await _context.RecyclingSubmissions
+                .Where(s => s.VerifiedBy == officer.OfficerId && s.Status == "Confirmed")
+                .SumAsync(s => (double?)s.Weight) ?? 0;
 
-            await _context.SaveChangesAsync();
+            ViewBag.TotalVerified = totalVerified;
+            ViewBag.TotalRejected = totalRejected;
+            ViewBag.TotalWeightVerified = totalWeightVerified;
 
-            TempData["SuccessMessage"] = "Submission rejected successfully.";
-
-            return RedirectToAction("Pending");
+            return View(officer);
         }
 
-        #region Helper Methods
+        // ============================================================
+        // GET: Officer/Leaderboard (Redirect to Resident Leaderboard)
+        // ============================================================
+        public ActionResult Leaderboard()
+        {
+            return RedirectToAction("Leaderboard", "Resident");
+        }
+
+        // ============================================================
+        // Helper Methods
+        // ============================================================
         private string GenerateEmployeeNumber()
         {
             var random = new Random();
-            var prefix = "EMP";
             var number = random.Next(10000, 99999).ToString();
-            return $"{prefix}{number}";
+            return "EMP" + number;
         }
-        #endregion
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _context.Dispose();
+            }
+            base.Dispose(disposing);
+        }
     }
 }
