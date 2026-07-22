@@ -1,39 +1,340 @@
 ﻿<!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@ViewBag.Title - My ASP.NET Application</title>
-    @Styles.Render("~/Content/css")
-    @Scripts.Render("~/bundles/modernizr")
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewBag.Title - BinIT2WinIT</title>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="~/Content/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/Content/site.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+    <style>
+        /* ===== GLOBAL STYLES ===== */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8FAF9;
+        }
+
+        /* ===== NAVIGATION ===== */
+        .navbar-custom {
+            background: linear-gradient(135deg, #1B5E20 0%, #2E7D32 50%, #388E3C 100%);
+            padding: 12px 0;
+            box-shadow: 0 4px 20px rgba(27, 94, 32, 0.25);
+        }
+
+            .navbar-custom .navbar-brand {
+                font-weight: 800;
+                font-size: 1.5rem;
+                color: white !important;
+                letter-spacing: -0.5px;
+            }
+
+                .navbar-custom .navbar-brand i {
+                    color: #A5D6A7;
+                    margin-right: 10px;
+                }
+
+            .navbar-custom .navbar-nav .nav-link {
+                color: rgba(255, 255, 255, 0.85) !important;
+                font-weight: 500;
+                padding: 8px 18px;
+                border-radius: 8px;
+                transition: all 0.3s ease;
+                font-size: 0.95rem;
+            }
+
+                .navbar-custom .navbar-nav .nav-link:hover,
+                .navbar-custom .navbar-nav .nav-link.active {
+                    color: white !important;
+                    background: rgba(255, 255, 255, 0.15);
+                }
+
+            .navbar-custom .navbar-toggler {
+                border-color: rgba(255, 255, 255, 0.5);
+            }
+
+            .navbar-custom .navbar-toggler-icon {
+                background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(255, 255, 255, 0.8)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+            }
+
+            .navbar-custom .dropdown-menu {
+                background: #1A1A2E;
+                border: none;
+                border-radius: 12px;
+                box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+            }
+
+            .navbar-custom .dropdown-item {
+                color: rgba(255, 255, 255, 0.85);
+                transition: all 0.3s ease;
+            }
+
+                .navbar-custom .dropdown-item:hover {
+                    background: rgba(255, 255, 255, 0.1);
+                    color: white;
+                }
+
+        .btn-outline-light-custom {
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            border-radius: 50px;
+            padding: 8px 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            background: transparent;
+        }
+
+            .btn-outline-light-custom:hover {
+                background: white;
+                color: #2E7D32;
+                border-color: white;
+            }
+
+        /* ===== FOOTER ===== */
+        .footer-custom {
+            background: #1A1A2E;
+            color: rgba(255, 255, 255, 0.7);
+            padding: 30px 0 20px;
+            margin-top: 40px;
+        }
+
+            .footer-custom a {
+                color: #A5D6A7;
+                text-decoration: none;
+            }
+
+                .footer-custom a:hover {
+                    color: white;
+                    text-decoration: underline;
+                }
+
+        /* ===== HOME PAGE SPECIFIC ===== */
+        .hero-section {
+            background: linear-gradient(135deg, #2E7D32 0%, #4CAF50 50%, #66BB6A 100%);
+            color: white;
+            padding: 60px 0;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+            .hero-section h1 {
+                font-size: 3.5rem;
+                font-weight: 700;
+            }
+
+            .hero-section .lead {
+                font-size: 1.3rem;
+            }
+
+        .feature-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            height: 100%;
+        }
+
+            .feature-card:hover {
+                transform: translateY(-8px);
+                box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+            }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .btn-recycle {
+            background-color: #2E7D32;
+            color: white;
+            border-radius: 30px;
+            padding: 12px 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+            .btn-recycle:hover {
+                background-color: #1B5E20;
+                color: white;
+                transform: scale(1.05);
+            }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #2E7D32;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @@media (max-width: 768px) {
+            .hero-section h1 {
+                font-size: 2rem;
+            }
+
+            .hero-section .lead {
+                font-size: 1rem;
+            }
+
+            .stat-number {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-dark">
+
+    <!-- ===== NAVIGATION ===== -->
+    <nav class="navbar navbar-expand-lg navbar-custom">
         <div class="container">
-            @Html.ActionLink("Application name", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
-            <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" title="Toggle navigation" aria-controls="navbarSupportedContent"
-                    aria-expanded="false" aria-label="Toggle navigation">
+            <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
+                <i class="fas fa-recycle"></i> BinIT2WinIT
+            </a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            <div class="collapse navbar-collapse d-sm-inline-flex justify-content-between">
+
+            <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                 <ul class="navbar-nav flex-grow-1">
-                    <li>@Html.ActionLink("Home", "Index", "Home", new { area = "" }, new { @class = "nav-link" })</li>
-                    <li>@Html.ActionLink("About", "About", "Home", new { area = "" }, new { @class = "nav-link" })</li>
-                    <li>@Html.ActionLink("Contact", "Contact", "Home", new { area = "" }, new { @class = "nav-link" })</li>
+                    <li class="nav-item">
+                        @Html.ActionLink("Home", "Index", "Home", null, new { @class = "nav-link active" })
+                    </li>
+                    <li class="nav-item">
+                        @Html.ActionLink("About", "About", "Home", null, new { @class = "nav-link" })
+                    </li>
+                    <li class="nav-item">
+                        @Html.ActionLink("Contact", "Contact", "Home", null, new { @class = "nav-link" })
+                    </li>
+
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        if (User.IsInRole("Resident"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" href="@Url.Action("Dashboard", "Resident")">
+                                    <i class="fas fa-home"></i> Dashboard
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="@Url.Action("SubmitRecycling", "Resident")">
+                                    <i class="fas fa-recycle"></i> Recycle
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="@Url.Action("Leaderboard", "Resident")">
+                                    <i class="fas fa-trophy"></i> Leaderboard
+                                </a>
+                            </li>
+                        }
+                        else if (User.IsInRole("CollectionOfficer"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" href="@Url.Action("Dashboard", "Officer")">
+                                    <i class="fas fa-clipboard-check"></i> Officer Dashboard
+                                </a>
+                            </li>
+                        }
+                        else if (User.IsInRole("Administrator"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-warning" href="@Url.Action("Dashboard", "Admin")">
+                                    <i class="fas fa-cog"></i> Admin Panel
+                                </a>
+                            </li>
+                        }
+                    }
+
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user"></i> Account
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            @if (User.Identity.IsAuthenticated)
+                            {
+                                <li><a class="dropdown-item" href="#"><i class="fas fa-user"></i> Profile</a></li>
+                                <li><hr class="dropdown-divider" /></li>
+                                <li><a class="dropdown-item" href="@Url.Action("Logout", "Account")"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                            }
+                            else
+                            {
+                                <li>@Html.ActionLink("Login", "Login", "Account", null, new { @class = "dropdown-item" })</li>
+                                <li>@Html.ActionLink("Register", "Register", "Account", null, new { @class = "dropdown-item" })</li>
+                            }
+                        </ul>
+                    </li>
                 </ul>
+
+                <div class="d-flex align-items-center">
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <span class="text-white me-2 small">
+                            <i class="fas fa-user-circle"></i> @User.Identity.Name
+                        </span>
+                        <a href="@Url.Action("Logout", "Account")" class="btn-outline-light-custom">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
+                    }
+                    else
+                    {
+                        <a href="@Url.Action("Login", "Account")" class="btn-outline-light-custom me-2">
+                            <i class="fas fa-sign-in-alt"></i> Login
+                        </a>
+                        <a href="@Url.Action("Register", "Account")" class="btn-outline-light-custom">
+                            <i class="fas fa-user-plus"></i> Sign Up
+                        </a>
+                    }
+                </div>
             </div>
         </div>
     </nav>
-    <div class="container body-content">
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <div class="container my-4">
         @RenderBody()
-        <hr />
-        <footer>
-            <p>&copy; @DateTime.Now.Year - My ASP.NET Application</p>
-        </footer>
     </div>
 
-    @Scripts.Render("~/bundles/jquery")
-    @Scripts.Render("~/bundles/bootstrap")
-    @RenderSection("scripts", required: false)
+    <!-- ===== FOOTER ===== -->
+    <footer class="footer-custom">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5><i class="fas fa-recycle text-success"></i> BinIT2WinIT</h5>
+                    <p class="text-muted small">
+                        Smart Recycling Rewards System. Empowering communities through sustainable innovation.
+                    </p>
+                </div>
+                <div class="col-md-4 text-center">
+                    <h6 class="text-white">Quick Links</h6>
+                    <p class="small">
+                        @Html.ActionLink("Home", "Index", "Home", null, new { @class = "text-white-50" }) &bull;
+                        @Html.ActionLink("About", "About", "Home", null, new { @class = "text-white-50" }) &bull;
+                        @Html.ActionLink("Contact", "Contact", "Home", null, new { @class = "text-white-50" })
+                    </p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <h6 class="text-white">Follow Us</h6>
+                    <a href="#" class="text-white-50 me-2"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="text-white-50 me-2"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="text-white-50 me-2"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="text-white-50"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+            </div>
+            <hr class="bg-secondary" />
+            <div class="text-center small">
+                &copy; @DateTime.Now.Year BinIT2WinIT. All Rights Reserved. Proudly South African 🇿🇦
+            </div>
+        </div>
+    </footer>
+
+    <!-- ===== SCRIPTS ===== -->
+    <script src="~/Scripts/jquery-3.6.0.min.js"></script>
+    <script src="~/Scripts/bootstrap.bundle.min.js"></script>
+    @RenderSection("Scripts", required: false)
 </body>
 </html>

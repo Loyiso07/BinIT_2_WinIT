@@ -2,7 +2,7 @@
 using Microsoft.AspNet.Identity.EntityFramework;
 using System.Data.Entity;
 
-namespace SmartRecycling.Data
+namespace BinIT2WinIT.Data  // Make sure namespace matches your project
 {
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
@@ -10,6 +10,7 @@ namespace SmartRecycling.Data
         {
         }
 
+        // ✅ CUSTOM TABLES - These are fine
         public DbSet<Resident> Residents { get; set; }
         public DbSet<CollectionOfficer> CollectionOfficers { get; set; }
         public DbSet<Administrator> Administrators { get; set; }
@@ -22,20 +23,19 @@ namespace SmartRecycling.Data
         public DbSet<CollectionEvent> CollectionEvents { get; set; }
         public DbSet<SystemConfiguration> SystemConfigurations { get; set; }
 
+        // ❌ REMOVE THIS LINE:
+        // public System.Data.Entity.DbSet<BinIT2WinIT.Models.ApplicationUser> ApplicationUsers { get; set; }
+
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
             // Configure relationships and constraints here
-            // For indexes, use the [Index] attribute on your models
-            // or add them via migrations
         }
 
         public static ApplicationDbContext Create()
         {
             return new ApplicationDbContext();
         }
-
-        public System.Data.Entity.DbSet<BinIT2WinIT.Models.ApplicationUser> ApplicationUsers { get; set; }
     }
 }

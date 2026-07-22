@@ -1,9 +1,375 @@
 ﻿@{
-    ViewBag.Title = "About";
+    ViewBag.Title = "About Us";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
-<main aria-labelledby="title">
-    <h2 id="title">@ViewBag.Title.</h2>
-    <h3>@ViewBag.Message</h3>
 
-    <p>Use this area to provide additional information.</p>
+<style>
+    .about-hero {
+        background: linear-gradient(135deg, #1B5E20 0%, #2E7D32 50%, #388E3C 100%);
+        color: white;
+        padding: 60px 0;
+        border-radius: 12px;
+        margin-bottom: 40px;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .about-hero::before {
+            content: '♻️';
+            position: absolute;
+            right: -50px;
+            top: -50px;
+            font-size: 300px;
+            opacity: 0.1;
+        }
+
+        .about-hero h1 {
+            font-size: 2.8rem;
+            font-weight: 700;
+        }
+
+        .about-hero p {
+            font-size: 1.2rem;
+            opacity: 0.95;
+        }
+
+    .mission-card {
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        height: 100%;
+        border-top: 5px solid #2E7D32;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .mission-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .mission-card .icon {
+            font-size: 2.5rem;
+            color: #2E7D32;
+            margin-bottom: 15px;
+        }
+
+        .mission-card h4 {
+            font-weight: 600;
+            color: #1A1A2E;
+        }
+
+    .stats-section {
+        background: #F8FAF9;
+        border-radius: 12px;
+        padding: 40px;
+        margin: 40px 0;
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #2E7D32;
+    }
+
+    .stat-label {
+        color: #4A4A5A;
+        font-weight: 500;
+    }
+
+    .story-section {
+        background: white;
+        border-radius: 12px;
+        padding: 40px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+        margin-bottom: 30px;
+    }
+
+        .story-section h3 {
+            color: #1A1A2E;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .story-section p {
+            color: #4A4A5A;
+            font-size: 1.05rem;
+            line-height: 1.8;
+        }
+
+    .values-list {
+        list-style: none;
+        padding: 0;
+    }
+
+        .values-list li {
+            padding: 12px 0;
+            border-bottom: 1px solid #E8F5E9;
+            display: flex;
+            align-items: start;
+            gap: 15px;
+        }
+
+            .values-list li:last-child {
+                border-bottom: none;
+            }
+
+        .values-list .value-icon {
+            font-size: 1.5rem;
+            min-width: 40px;
+            color: #2E7D32;
+        }
+
+    .timeline-item {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 25px;
+        padding-left: 20px;
+        border-left: 3px solid #2E7D32;
+    }
+
+    .timeline-year {
+        font-weight: 700;
+        color: #2E7D32;
+        min-width: 70px;
+        font-size: 1.1rem;
+    }
+
+    .timeline-content {
+        color: #4A4A5A;
+    }
+
+    .cta-section {
+        background: linear-gradient(135deg, #1B5E20, #2E7D32);
+        color: white;
+        padding: 50px 0;
+        border-radius: 12px;
+        text-align: center;
+        margin-top: 40px;
+    }
+
+        .cta-section h3 {
+            font-weight: 700;
+        }
+
+        .cta-section .btn-join {
+            background: white;
+            color: #2E7D32;
+            padding: 14px 40px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            border: none;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+            .cta-section .btn-join:hover {
+                transform: scale(1.05);
+                background: #E8F5E9;
+                color: #1B5E20;
+            }
+
+    @@media (max-width: 768px) {
+        .about-hero {
+            padding: 30px 20px;
+        }
+
+            .about-hero h1 {
+                font-size: 2rem;
+            }
+
+        .stat-number {
+            font-size: 1.8rem;
+        }
+
+        .story-section {
+            padding: 20px;
+        }
+
+        .timeline-item {
+            flex-direction: column;
+            gap: 5px;
+        }
+    }
+</style>
+
+<main>
+    <!-- Hero Section -->
+    <div class="about-hero text-center">
+        <div class="container">
+            <h1>🌍 About BinIT2WinIT</h1>
+            <p class="lead">Empowering communities through smart recycling and sustainable innovation.</p>
+            <p class="lead">Turning every bin into an opportunity for change.</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Our Story -->
+        <div class="story-section">
+            <h3>📖 Our Story</h3>
+            <p>
+                BinIT2WinIT was born from a simple yet powerful observation: South Africa faces a critical waste management crisis.
+                With <strong>only 10-15% of recyclable waste</strong> being recycled, landfills are reaching capacity, communities are
+                suffering from pollution, and valuable resources are being wasted.
+            </p>
+            <p>
+                We asked ourselves: <strong>"What if recycling could be rewarding?"</strong> What if every bottle, every piece of paper,
+                every can could earn you points that actually matter? What if we could turn the simple act of throwing away trash into
+                a positive, community-driven movement?
+            </p>
+            <p>
+                That's how <strong>BinIT2WinIT</strong> was born. Our platform gamifies recycling, rewarding individuals and communities
+                for making sustainable choices. By combining technology with environmental action, we're creating a future where
+                recycling is not just a duty, but a rewarding lifestyle.
+            </p>
+            <p>
+                Starting from the streets of Durban, KwaZulu-Natal, our vision is to expand across <strong>South Africa</strong>,
+                and eventually to the <strong>entire African continent and the world</strong>. We believe that every community deserves
+                access to smart, rewarding, and sustainable waste management solutions.
+            </p>
+        </div>
+
+        <!-- Mission, Vision, Values -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="mission-card text-center">
+                    <div class="icon">🎯</div>
+                    <h4>Our Mission</h4>
+                    <p>To empower individuals and communities to recycle by providing tangible rewards, real-time tracking, and a transparent, trust-based system that makes sustainability accessible and enjoyable for everyone.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="mission-card text-center">
+                    <div class="icon">👁️</div>
+                    <h4>Our Vision</h4>
+                    <p>To create a cleaner, greener South Africa where every citizen is an active participant in the circular economy, and to export this model to communities across the globe, one smart bin at a time.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="mission-card text-center">
+                    <div class="icon">💚</div>
+                    <h4>Our Values</h4>
+                    <ul class="values-list text-start">
+                        <li><span class="value-icon">🌱</span> <strong>Sustainability</strong> – We put the planet first.</li>
+                        <li><span class="value-icon">🤝</span> <strong>Community</strong> – Together, we achieve more.</li>
+                        <li><span class="value-icon">🔬</span> <strong>Innovation</strong> – Technology drives change.</li>
+                        <li><span class="value-icon">🔒</span> <strong>Trust</strong> – Transparency and honesty in all we do.</li>
+                        <li><span class="value-icon">🌍</span> <strong>Ubuntu</strong> – "I am because we are."</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics -->
+        <div class="stats-section">
+            <div class="row text-center">
+                <div class="col-6 col-md-3">
+                    <div class="stat-number">10-15%</div>
+                    <div class="stat-label">Current Recycling Rate</div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="stat-number">🌍</div>
+                    <div class="stat-label">Goal: 50% by 2030</div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="stat-number">♻️</div>
+                    <div class="stat-label">Recyclables Diverted</div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="stat-number">🇿🇦</div>
+                    <div class="stat-label">Proudly South African</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Our Journey -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="story-section">
+                    <h3>🚀 Our Journey</h3>
+                    <div class="timeline-item">
+                        <div class="timeline-year">2024</div>
+                        <div class="timeline-content">
+                            <strong>Concept & Ideation</strong> – The BinIT2WinIT vision was born from a group of passionate students at the Durban University of Technology. We identified a gap in the recycling ecosystem and decided to build a solution.
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-year">2025</div>
+                        <div class="timeline-content">
+                            <strong>Development & Testing</strong> – Our team developed the first prototype of the Smart Recycling Rewards System. We collaborated with Tech Horizons and industry experts to refine our platform and ensure it met real-world needs.
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-year">2026</div>
+                        <div class="timeline-content">
+                            <strong>Launch & Community Impact</strong> – We launched the platform in Durban, partnering with local municipalities and drop-off points. Our pilot program showed a 40% increase in community recycling participation.
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-year">2027+</div>
+                        <div class="timeline-content">
+                            <strong>Expansion & Global Vision</strong> – Our goal is to expand across South Africa, into neighbouring African countries, and eventually to communities worldwide. We aim to make BinIT2WinIT a global movement for sustainable change.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Our Team & Impact -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="story-section">
+                    <h3>👥 Our Team</h3>
+                    <p>
+                        BinIT2WinIT is built by a passionate team of developers, designers, and sustainability advocates.
+                        We are students, innovators, and dreamers who believe that technology can be a force for good.
+                    </p>
+                    <p>
+                        Our team members come from diverse backgrounds, united by a common goal: to make recycling accessible,
+                        rewarding, and impactful. We are proud to represent the spirit of Durban and the innovation of South Africa.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="story-section">
+                    <h3>🌱 Our Impact</h3>
+                    <p>
+                        Every day, we get closer to a cleaner, greener South Africa. Our platform is designed to:
+                    </p>
+                    <ul class="values-list">
+                        <li><span class="value-icon">♻️</span> <strong>Divert waste</strong> from landfills and reduce environmental pollution.</li>
+                        <li><span class="value-icon">💰</span> <strong>Reward citizens</strong> for sustainable behaviour and community participation.</li>
+                        <li><span class="value-icon">📊</span> <strong>Provide data</strong> to municipalities for better waste management planning.</li>
+                        <li><span class="value-icon">🌍</span> <strong>Inspire change</strong> and build a culture of recycling across South Africa.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Call to Action -->
+        <div class="cta-section">
+            <div class="container">
+                <h3>🤝 Join the BinIT2WinIT Movement</h3>
+                <p class="lead">Together, we can build a cleaner, greener South Africa. One bin at a time.</p>
+                <p style="opacity:0.9; font-size:0.95rem;">
+                    <i class="fas fa-recycle"></i> Every bin counts. Every action matters. Every person makes a difference.
+                </p>
+                <a href="@Url.Action("Contact", "Home")" class="btn-join">
+                    <i class="fas fa-hand-holding-heart"></i> Get Involved
+                </a>
+                <a href="@Url.Action("Index", "Home")" class="btn-join" style="background:rgba(255,255,255,0.2); color:white; margin-left:10px;">
+                    <i class="fas fa-home"></i> Learn More
+                </a>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="row mt-4">
+            <div class="col-12 text-center text-muted small">
+                <p><i class="fas fa-recycle text-success"></i> BinIT2WinIT – Smart Recycling Rewards System | © @DateTime.Now.Year All Rights Reserved</p>
+            </div>
+        </div>
+    </div>
 </main>
