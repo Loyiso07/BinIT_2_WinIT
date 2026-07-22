@@ -2,7 +2,6 @@
 using BinIT2WinIT.Models;
 using System;
 using System.Data.Entity;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace BinIT2WinIT.Services
