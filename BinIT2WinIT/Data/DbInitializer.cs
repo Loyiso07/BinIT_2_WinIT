@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Linq;
 using BinIT2WinIT.Models;
+using global::SmartRecycling.Data;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
-using BinIT2WinIT.Data;
 
 namespace BinIT2WinIT.Data
 {
@@ -14,9 +14,7 @@ namespace BinIT2WinIT.Data
             var userManager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(context));
             var roleManager = new RoleManager<IdentityRole>(new RoleStore<IdentityRole>(context));
 
-            // ============================================
-            // CREATE ROLES
-            // ============================================
+            // Create Roles
             string[] roleNames = { "Administrator", "CollectionOfficer", "Resident" };
             foreach (var roleName in roleNames)
             {
@@ -26,9 +24,7 @@ namespace BinIT2WinIT.Data
                 }
             }
 
-            // ============================================
-            // CREATE ADMIN USER
-            // ============================================
+            // Create Admin User
             var adminEmail = "admin@recycle.com";
             var adminUser = userManager.FindByEmail(adminEmail);
             if (adminUser == null)
@@ -48,9 +44,7 @@ namespace BinIT2WinIT.Data
                 }
             }
 
-            // ============================================
-            // CREATE OFFICER USER
-            // ============================================
+            // Create Sample Officer User
             var officerEmail = "officer@recycle.com";
             var officerUser = userManager.FindByEmail(officerEmail);
             if (officerUser == null)
@@ -70,9 +64,7 @@ namespace BinIT2WinIT.Data
                 }
             }
 
-            // ============================================
-            // CREATE RESIDENT USER
-            // ============================================
+            // Create Sample Resident User
             var residentEmail = "resident@recycle.com";
             var residentUser = userManager.FindByEmail(residentEmail);
             if (residentUser == null)
@@ -92,9 +84,7 @@ namespace BinIT2WinIT.Data
                 }
             }
 
-            // ============================================
-            // ✅ SEED MATERIAL TYPES
-            // ============================================
+            // Seed Material Types - ✅ FIXED
             if (!context.MaterialTypes.Any())
             {
                 context.MaterialTypes.AddRange(new MaterialType[]
@@ -108,9 +98,7 @@ namespace BinIT2WinIT.Data
                 context.SaveChanges();
             }
 
-            // ============================================
-            // ✅ SEED POINTS RATES
-            // ============================================
+            // Seed Points Rates - ✅ FIXED
             if (!context.PointsRates.Any())
             {
                 var materials = context.MaterialTypes.ToList();
@@ -125,9 +113,7 @@ namespace BinIT2WinIT.Data
                 context.SaveChanges();
             }
 
-            // ============================================
-            // ✅ SEED DROP-OFF POINTS
-            // ============================================
+            // Seed DropOff Points - ✅ FIXED
             if (!context.DropOffPoints.Any())
             {
                 context.DropOffPoints.AddRange(new DropOffPoint[]
@@ -139,9 +125,7 @@ namespace BinIT2WinIT.Data
                 context.SaveChanges();
             }
 
-            // ============================================
-            // ✅ SEED SYSTEM CONFIGURATIONS
-            // ============================================
+            // Seed System Configurations - ✅ FIXED
             if (!context.SystemConfigurations.Any())
             {
                 context.SystemConfigurations.AddRange(new SystemConfiguration[]
