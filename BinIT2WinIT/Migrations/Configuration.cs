@@ -5,14 +5,14 @@
     using System.Data.Entity.Migrations;
     using System.Linq;
 
-    internal sealed class Configuration : DbMigrationsConfiguration<SmartRecycling.Data.ApplicationDbContext>
+    internal sealed class Configuration : DbMigrationsConfiguration<BinIT2WinIT.Data.ApplicationDbContext>
     {
         public Configuration()
         {
             AutomaticMigrationsEnabled = false;
         }
 
-        protected override void Seed(SmartRecycling.Data.ApplicationDbContext context)
+        protected override void Seed(BinIT2WinIT.Data.ApplicationDbContext context)
         {
             //  This method will be called after migrating to the latest version.
 

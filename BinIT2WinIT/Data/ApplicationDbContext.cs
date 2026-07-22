@@ -2,7 +2,7 @@
 using Microsoft.AspNet.Identity.EntityFramework;
 using System.Data.Entity;
 
-namespace SmartRecycling.Data
+namespace BinIT2WinIT.Data  // ✅ CHANGED from SmartRecycling.Data
 {
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
@@ -10,6 +10,7 @@ namespace SmartRecycling.Data
         {
         }
 
+        // ✅ Only your custom DbSets - NO ApplicationUser DbSet!
         public DbSet<Resident> Residents { get; set; }
         public DbSet<CollectionOfficer> CollectionOfficers { get; set; }
         public DbSet<Administrator> Administrators { get; set; }
@@ -36,6 +37,6 @@ namespace SmartRecycling.Data
             return new ApplicationDbContext();
         }
 
-        public System.Data.Entity.DbSet<BinIT2WinIT.Models.ApplicationUser> ApplicationUsers { get; set; }
+    
     }
 }

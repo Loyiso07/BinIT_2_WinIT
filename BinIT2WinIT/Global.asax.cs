@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Web.Mvc;
+﻿using System.Web.Mvc;
 using System.Web.Optimization;
 using System.Web.Routing;
 using BinIT2WinIT.Data;
-using global::SmartRecycling.Data;
 namespace BinIT2WinIT
 {
         public class MvcApplication : System.Web.HttpApplication

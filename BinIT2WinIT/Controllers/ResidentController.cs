@@ -1,7 +1,6 @@
 ﻿using BinIT2WinIT.Data;          // Required for ApplicationDbContext
 using BinIT2WinIT.Models;
 using Microsoft.AspNet.Identity;
-using SmartRecycling.Data;
 using System;
 using System.Data.Entity;
 using System.Linq;
