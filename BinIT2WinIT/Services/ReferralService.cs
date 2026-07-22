@@ -1,4 +1,5 @@
 ﻿using BinIT2WinIT.Data;
+using BinIT2WinIT.Models;
 using System;
 using System.Data.Entity;
 using System.Linq;
