@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using BinIT2WinIT.Models;
-using global::SmartRecycling.Data;
+using global::BinIT2WinIT.Data;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
 

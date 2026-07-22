@@ -238,6 +238,10 @@
     <Compile Include="Controllers\AdminController.cs" />
     <Compile Include="Controllers\OfficerController.cs" />
     <Compile Include="Controllers\ResidentController.cs" />
+    <Compile Include="Migrations\202607221617059_UpdateDatabase.cs" />
+    <Compile Include="Migrations\202607221617059_UpdateDatabase.Designer.cs">
+      <DependentUpon>202607221617059_UpdateDatabase.cs</DependentUpon>
+    </Compile>
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Data\ApplicationDbContext.cs" />
@@ -382,6 +386,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202607191336497_InitialCreate.resx">
       <DependentUpon>202607191336497_InitialCreate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202607221617059_UpdateDatabase.resx">
+      <DependentUpon>202607221617059_UpdateDatabase.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

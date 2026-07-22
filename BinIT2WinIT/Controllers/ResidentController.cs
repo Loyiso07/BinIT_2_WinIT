@@ -1,4 +1,4 @@
-﻿using BinIT2WinIT.Data;          // Required for ApplicationDbContext
+﻿using BinIT2WinIT.Data;
 using BinIT2WinIT.Models;
 using Microsoft.AspNet.Identity;
 using System;
@@ -19,6 +19,11 @@ namespace BinIT2WinIT.Controllers
         {
             var userId = User.Identity.GetUserId();
 
+            if (string.IsNullOrEmpty(userId))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
             var resident = await _context.Residents
                 .Include(r => r.Submissions)
                 .Include(r => r.PointsTransactions)
@@ -36,9 +41,10 @@ namespace BinIT2WinIT.Controllers
                 resident = new Resident
                 {
                     UserId = userId,
-                    FullName = user.FullName,
-                    PhoneNumber = user.PhoneNumber,
+                    FullName = user.FullName ?? user.UserName,
+                    PhoneNumber = user.PhoneNumber ?? "",
                     CreatedAt = DateTime.Now,
+                    IsActive = true,
                     ReferralCode = GenerateReferralCode()
                 };
                 _context.Residents.Add(resident);
@@ -69,6 +75,12 @@ namespace BinIT2WinIT.Controllers
             if (ModelState.IsValid)
             {
                 var userId = User.Identity.GetUserId();
+
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return RedirectToAction("Login", "Account");
+                }
+
                 var resident = await _context.Residents.FirstOrDefaultAsync(r => r.UserId == userId);
 
                 if (resident == null)
@@ -94,7 +106,7 @@ namespace BinIT2WinIT.Controllers
 
                 var estimatedPoints = pointsRate != null ? (int)(model.Weight * pointsRate.PointsPerKg) : 0;
 
-                TempData["SuccessMessage"] = $"Your recycling submission was successful! Estimated points: {estimatedPoints}";
+                TempData["SuccessMessage"] = $"✅ Your recycling submission was successful! Estimated points: {estimatedPoints}";
                 return RedirectToAction("Dashboard");
             }
 
@@ -107,6 +119,12 @@ namespace BinIT2WinIT.Controllers
         public async Task<ActionResult> PointsHistory()
         {
             var userId = User.Identity.GetUserId();
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
             var resident = await _context.Residents
                 .Include(r => r.PointsTransactions)
                 .FirstOrDefaultAsync(r => r.UserId == userId);
@@ -141,6 +159,12 @@ namespace BinIT2WinIT.Controllers
         public async Task<ActionResult> InfluencerPoints()
         {
             var userId = User.Identity.GetUserId();
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
             var resident = await _context.Residents
                 .FirstOrDefaultAsync(r => r.UserId == userId);
 
@@ -159,6 +183,13 @@ namespace BinIT2WinIT.Controllers
             var random = new Random();
             var code = new string(Enumerable.Repeat(chars, 8)
                 .Select(s => s[random.Next(s.Length)]).ToArray());
+
+            // Ensure uniqueness
+            while (_context.Residents.Any(r => r.ReferralCode == code))
+            {
+                code = new string(Enumerable.Repeat(chars, 8)
+                    .Select(s => s[random.Next(s.Length)]).ToArray());
+            }
             return code;
         }
 
@@ -188,6 +219,15 @@ namespace BinIT2WinIT.Controllers
             }
 
             await _context.SaveChangesAsync();
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _context.Dispose();
+            }
+            base.Dispose(disposing);
         }
         #endregion
     }
