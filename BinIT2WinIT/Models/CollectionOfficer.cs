@@ -16,22 +16,20 @@ namespace BinIT2WinIT.Models
         [Required]
         public string FullName { get; set; }
 
-        // ✅ ADD DEFAULT VALUE FOR PHONE NUMBER
         public string PhoneNumber { get; set; } = "000-000-0000";
 
+        // ✅ THIS IS THE FOREIGN KEY TO THE REGION/DROP-OFF POINT
         public int? DropOffPointId { get; set; }
 
         public string EmployeeNumber { get; set; }
-
         public string Department { get; set; } = "Waste Management";
-
         public bool IsActive { get; set; } = true;
-
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         [ForeignKey("UserId")]
         public virtual ApplicationUser User { get; set; }
 
+        // ✅ NAVIGATION PROPERTY TO THE REGION
         [ForeignKey("DropOffPointId")]
         public virtual DropOffPoint AssignedDropOffPoint { get; set; }
 

@@ -14,7 +14,9 @@ namespace BinIT2WinIT.Controllers
     {
         private readonly ApplicationDbContext _context = new ApplicationDbContext();
 
+        // ============================================================
         // GET: Resident/Dashboard
+        // ============================================================
         public async Task<ActionResult> Dashboard()
         {
             var userId = User.Identity.GetUserId();
@@ -26,6 +28,7 @@ namespace BinIT2WinIT.Controllers
 
             var resident = await _context.Residents
                 .Include(r => r.Submissions)
+                .Include(r => r.Submissions.Select(s => s.MaterialType))
                 .Include(r => r.PointsTransactions)
                 .FirstOrDefaultAsync(r => r.UserId == userId);
 
@@ -56,7 +59,9 @@ namespace BinIT2WinIT.Controllers
             return View(resident);
         }
 
+        // ============================================================
         // GET: Resident/SubmitRecycling
+        // ============================================================
         public async Task<ActionResult> SubmitRecycling()
         {
             var viewModel = new RecyclingSubmissionViewModel
@@ -67,7 +72,9 @@ namespace BinIT2WinIT.Controllers
             return View(viewModel);
         }
 
+        // ============================================================
         // POST: Resident/SubmitRecycling
+        // ============================================================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> SubmitRecycling(RecyclingSubmissionViewModel model)
@@ -115,7 +122,9 @@ namespace BinIT2WinIT.Controllers
             return View(model);
         }
 
+        // ============================================================
         // GET: Resident/PointsHistory
+        // ============================================================
         public async Task<ActionResult> PointsHistory()
         {
             var userId = User.Identity.GetUserId();
@@ -137,7 +146,9 @@ namespace BinIT2WinIT.Controllers
             return View(resident);
         }
 
+        // ============================================================
         // GET: Resident/Leaderboard
+        // ============================================================
         public async Task<ActionResult> Leaderboard()
         {
             var topResidents = await _context.Residents
@@ -149,13 +160,25 @@ namespace BinIT2WinIT.Controllers
             var currentResident = await _context.Residents
                 .FirstOrDefaultAsync(r => r.UserId == userId);
 
+            // ✅ CALCULATE RANK
+            int rank = 0;
+            if (currentResident != null)
+            {
+                rank = await _context.Residents
+                    .Where(r => r.PointsBalance > currentResident.PointsBalance)
+                    .CountAsync() + 1;
+            }
+
             ViewBag.CurrentUserId = userId;
             ViewBag.CurrentResident = currentResident;
+            ViewBag.CurrentRank = rank;
 
             return View(topResidents);
         }
 
+        // ============================================================
         // GET: Resident/InfluencerPoints
+        // ============================================================
         public async Task<ActionResult> InfluencerPoints()
         {
             var userId = User.Identity.GetUserId();
@@ -176,7 +199,9 @@ namespace BinIT2WinIT.Controllers
             return View(resident);
         }
 
-        #region Helper Methods
+        // ============================================================
+        // Helper Methods
+        // ============================================================
         private string GenerateReferralCode()
         {
             var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -229,6 +254,5 @@ namespace BinIT2WinIT.Controllers
             }
             base.Dispose(disposing);
         }
-        #endregion
     }
 }
