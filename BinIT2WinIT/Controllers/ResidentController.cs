@@ -1,4 +1,4 @@
-﻿using BinIT2WinIT.Data;          // Required for ApplicationDbContext
+﻿using BinIT2WinIT.Data;
 using BinIT2WinIT.Models;
 using Microsoft.AspNet.Identity;
 using System;
@@ -14,13 +14,21 @@ namespace BinIT2WinIT.Controllers
     {
         private readonly ApplicationDbContext _context = new ApplicationDbContext();
 
+        // ============================================================
         // GET: Resident/Dashboard
+        // ============================================================
         public async Task<ActionResult> Dashboard()
         {
             var userId = User.Identity.GetUserId();
 
+            if (string.IsNullOrEmpty(userId))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
             var resident = await _context.Residents
                 .Include(r => r.Submissions)
+                .Include(r => r.Submissions.Select(s => s.MaterialType))
                 .Include(r => r.PointsTransactions)
                 .FirstOrDefaultAsync(r => r.UserId == userId);
 
@@ -36,9 +44,10 @@ namespace BinIT2WinIT.Controllers
                 resident = new Resident
                 {
                     UserId = userId,
-                    FullName = user.FullName,
-                    PhoneNumber = user.PhoneNumber,
+                    FullName = user.FullName ?? user.UserName,
+                    PhoneNumber = user.PhoneNumber ?? "",
                     CreatedAt = DateTime.Now,
+                    IsActive = true,
                     ReferralCode = GenerateReferralCode()
                 };
                 _context.Residents.Add(resident);
@@ -50,7 +59,9 @@ namespace BinIT2WinIT.Controllers
             return View(resident);
         }
 
+        // ============================================================
         // GET: Resident/SubmitRecycling
+        // ============================================================
         public async Task<ActionResult> SubmitRecycling()
         {
             var viewModel = new RecyclingSubmissionViewModel
@@ -61,7 +72,9 @@ namespace BinIT2WinIT.Controllers
             return View(viewModel);
         }
 
+        // ============================================================
         // POST: Resident/SubmitRecycling
+        // ============================================================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> SubmitRecycling(RecyclingSubmissionViewModel model)
@@ -69,6 +82,12 @@ namespace BinIT2WinIT.Controllers
             if (ModelState.IsValid)
             {
                 var userId = User.Identity.GetUserId();
+
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return RedirectToAction("Login", "Account");
+                }
+
                 var resident = await _context.Residents.FirstOrDefaultAsync(r => r.UserId == userId);
 
                 if (resident == null)
@@ -94,7 +113,7 @@ namespace BinIT2WinIT.Controllers
 
                 var estimatedPoints = pointsRate != null ? (int)(model.Weight * pointsRate.PointsPerKg) : 0;
 
-                TempData["SuccessMessage"] = $"Your recycling submission was successful! Estimated points: {estimatedPoints}";
+                TempData["SuccessMessage"] = $"✅ Your recycling submission was successful! Estimated points: {estimatedPoints}";
                 return RedirectToAction("Dashboard");
             }
 
@@ -103,10 +122,18 @@ namespace BinIT2WinIT.Controllers
             return View(model);
         }
 
+        // ============================================================
         // GET: Resident/PointsHistory
+        // ============================================================
         public async Task<ActionResult> PointsHistory()
         {
             var userId = User.Identity.GetUserId();
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
             var resident = await _context.Residents
                 .Include(r => r.PointsTransactions)
                 .FirstOrDefaultAsync(r => r.UserId == userId);
@@ -119,7 +146,9 @@ namespace BinIT2WinIT.Controllers
             return View(resident);
         }
 
+        // ============================================================
         // GET: Resident/Leaderboard
+        // ============================================================
         public async Task<ActionResult> Leaderboard()
         {
             var topResidents = await _context.Residents
@@ -131,16 +160,34 @@ namespace BinIT2WinIT.Controllers
             var currentResident = await _context.Residents
                 .FirstOrDefaultAsync(r => r.UserId == userId);
 
+            // ✅ CALCULATE RANK
+            int rank = 0;
+            if (currentResident != null)
+            {
+                rank = await _context.Residents
+                    .Where(r => r.PointsBalance > currentResident.PointsBalance)
+                    .CountAsync() + 1;
+            }
+
             ViewBag.CurrentUserId = userId;
             ViewBag.CurrentResident = currentResident;
+            ViewBag.CurrentRank = rank;
 
             return View(topResidents);
         }
 
+        // ============================================================
         // GET: Resident/InfluencerPoints
+        // ============================================================
         public async Task<ActionResult> InfluencerPoints()
         {
             var userId = User.Identity.GetUserId();
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
             var resident = await _context.Residents
                 .FirstOrDefaultAsync(r => r.UserId == userId);
 
@@ -152,13 +199,22 @@ namespace BinIT2WinIT.Controllers
             return View(resident);
         }
 
-        #region Helper Methods
+        // ============================================================
+        // Helper Methods
+        // ============================================================
         private string GenerateReferralCode()
         {
             var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
             var random = new Random();
             var code = new string(Enumerable.Repeat(chars, 8)
                 .Select(s => s[random.Next(s.Length)]).ToArray());
+
+            // Ensure uniqueness
+            while (_context.Residents.Any(r => r.ReferralCode == code))
+            {
+                code = new string(Enumerable.Repeat(chars, 8)
+                    .Select(s => s[random.Next(s.Length)]).ToArray());
+            }
             return code;
         }
 
@@ -189,6 +245,14 @@ namespace BinIT2WinIT.Controllers
 
             await _context.SaveChangesAsync();
         }
-        #endregion
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _context.Dispose();
+            }
+            base.Dispose(disposing);
+        }
     }
 }
