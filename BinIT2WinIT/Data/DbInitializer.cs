@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using BinIT2WinIT.Models;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
-using SmartRecycling.Data;
+using BinIT2WinIT.Data;
 
 namespace BinIT2WinIT.Data
 {
