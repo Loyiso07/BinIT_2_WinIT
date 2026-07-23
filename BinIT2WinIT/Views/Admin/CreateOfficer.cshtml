@@ -1,0 +1,77 @@
+﻿@model BinIT2WinIT.Models.CreateOfficerViewModel
+
+@{
+    ViewBag.Title = "Create Officer";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h4><i class="fas fa-user-plus"></i> Create Collection Officer</h4>
+                </div>
+                <div class="card-body">
+                    @using (Html.BeginForm("CreateOfficer", "Admin", FormMethod.Post))
+                    {
+                        @Html.AntiForgeryToken()
+                        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+                        <div class="form-group mb-3">
+                            @Html.LabelFor(m => m.FullName, new { @class = "form-label fw-semibold" })
+                            @Html.TextBoxFor(m => m.FullName, new { @class = "form-control", placeholder = "Enter full name" })
+                            @Html.ValidationMessageFor(m => m.FullName, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group mb-3">
+                            @Html.LabelFor(m => m.Email, new { @class = "form-label fw-semibold" })
+                            @Html.TextBoxFor(m => m.Email, new { @class = "form-control", placeholder = "Enter email address" })
+                            @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group mb-3">
+                            @Html.LabelFor(m => m.PhoneNumber, new { @class = "form-label fw-semibold" })
+                            @Html.TextBoxFor(m => m.PhoneNumber, new { @class = "form-control", placeholder = "Enter phone number" })
+                            @Html.ValidationMessageFor(m => m.PhoneNumber, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group mb-3">
+                            @Html.LabelFor(m => m.Password, new { @class = "form-label fw-semibold" })
+                            @Html.PasswordFor(m => m.Password, new { @class = "form-control", placeholder = "Enter password" })
+                            @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group mb-3">
+                            @Html.LabelFor(m => m.Department, new { @class = "form-label fw-semibold" })
+                            @Html.TextBoxFor(m => m.Department, new { @class = "form-control", placeholder = "Department" })
+                            @Html.ValidationMessageFor(m => m.Department, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="form-group mb-3">
+                            @Html.LabelFor(m => m.DropOffPointId, new { @class = "form-label fw-semibold" })
+                            @Html.DropDownListFor(
+                                m => m.DropOffPointId,
+                                (SelectList)ViewBag.DropOffPoints,
+                                "-- Select Region --",
+                                new { @class = "form-control" }
+                            )
+                            @Html.ValidationMessageFor(m => m.DropOffPointId, "", new { @class = "text-danger" })
+                        </div>
+
+                        <div class="mt-3">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save"></i> Create Officer
+                            </button>
+                            @Html.ActionLink("Cancel", "Officers", "Admin", null, new { @class = "btn btn-secondary ms-2" })
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}

@@ -18,6 +18,7 @@ namespace BinIT2WinIT.Controllers
         private ApplicationSignInManager _signInManager;
         private ApplicationUserManager _userManager;
         private ApplicationRoleManager _roleManager;
+        private readonly ApplicationDbContext _context = new ApplicationDbContext();
 
         // ============================================================
         // CONSTRUCTORS
@@ -105,7 +106,6 @@ namespace BinIT2WinIT.Controllers
             switch (result)
             {
                 case SignInStatus.Success:
-                    // ✅ Redirect based on role
                     var user = await UserManager.FindByEmailAsync(model.Email);
                     if (user != null)
                     {
@@ -186,16 +186,16 @@ namespace BinIT2WinIT.Controllers
                             await RoleManager.CreateAsync(new IdentityRole("Resident"));
                         }
 
-                        // ✅ Add user to Resident role
+                        // Add user to Resident role
                         await UserManager.AddToRoleAsync(user.Id, "Resident");
 
-                        // ✅ Create Resident profile
+                        // Create Resident profile
                         var resident = new Resident
                         {
                             UserId = user.Id,
                             FullName = model.FullName,
                             PhoneNumber = model.PhoneNumber ?? "",
-                            PointsBalance = 100, // Welcome bonus
+                            PointsBalance = 100,
                             InfluencerPoints = 0,
                             TotalCO2Saved = 0,
                             TotalReferrals = 0,
@@ -204,10 +204,45 @@ namespace BinIT2WinIT.Controllers
                             CreatedAt = DateTime.Now
                         };
 
-                        using (var db = new ApplicationDbContext())
+                        _context.Residents.Add(resident);
+                        await _context.SaveChangesAsync();
+
+                        // ✅ PROCESS REFERRAL CODE
+                        if (!string.IsNullOrEmpty(model.ReferralCode))
                         {
-                            db.Residents.Add(resident);
-                            await db.SaveChangesAsync();
+                            var referrer = _context.Residents
+                                .FirstOrDefault(r => r.ReferralCode == model.ReferralCode);
+
+                            if (referrer != null && referrer.UserId != user.Id)
+                            {
+                                var welcomeBonusConfig = _context.SystemConfigurations
+                                    .FirstOrDefault(c => c.ConfigKey == "WelcomeBonusPoints");
+                                var influencerConfig = _context.SystemConfigurations
+                                    .FirstOrDefault(c => c.ConfigKey == "InfluencerPointsPerReferral");
+
+                                var welcomeBonus = welcomeBonusConfig != null ? int.Parse(welcomeBonusConfig.ConfigValue) : 100;
+                                var influencerPoints = influencerConfig != null ? int.Parse(influencerConfig.ConfigValue) : 50;
+
+                                var referral = new ReferralTransaction
+                                {
+                                    ReferrerId = referrer.ResidentId,
+                                    NewResidentId = resident.ResidentId,
+                                    PromoCodeUsed = model.ReferralCode,
+                                    InfluencerPointsEarned = influencerPoints,
+                                    WelcomeBonusAwarded = welcomeBonus,
+                                    TransactionDate = DateTime.Now,
+                                    Status = "Completed"
+                                };
+                                _context.ReferralTransactions.Add(referral);
+
+                                referrer.InfluencerPoints += influencerPoints;
+                                referrer.TotalReferrals += 1;
+                                resident.PointsBalance += welcomeBonus;
+
+                                await _context.SaveChangesAsync();
+
+                                TempData["SuccessMessage"] = $"✅ Welcome! You earned {welcomeBonus} bonus points!";
+                            }
                         }
 
                         await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
@@ -227,14 +262,23 @@ namespace BinIT2WinIT.Controllers
         }
 
         // ============================================================
-        // ✅ LOGOUT - POST (SECURE)
+        // ✅ FIX: GET /Account/Logout (For direct link clicks)
         // ============================================================
         [HttpGet]
         public ActionResult Logout()
         {
             AuthenticationManager.SignOut(DefaultAuthenticationTypes.ApplicationCookie);
-            Session.Clear();
-            Session.Abandon();
+            return RedirectToAction("Index", "Home");
+        }
+
+        // ============================================================
+        // POST: /Account/Logout (For forms - more secure)
+        // ============================================================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult LogoutPost()
+        {
+            AuthenticationManager.SignOut(DefaultAuthenticationTypes.ApplicationCookie);
             return RedirectToAction("Index", "Home");
         }
 
@@ -337,20 +381,25 @@ namespace BinIT2WinIT.Controllers
         // ============================================================
         private string GenerateReferralCode()
         {
-            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
             var random = new Random();
             var code = new string(Enumerable.Repeat(chars, 8)
                 .Select(s => s[random.Next(s.Length)]).ToArray());
 
-            using (var db = new ApplicationDbContext())
+            while (_context.Residents.Any(r => r.ReferralCode == code))
             {
-                while (db.Residents.Any(r => r.ReferralCode == code))
-                {
-                    code = new string(Enumerable.Repeat(chars, 8)
-                        .Select(s => s[random.Next(s.Length)]).ToArray());
-                }
+                code = new string(Enumerable.Repeat(chars, 8)
+                    .Select(s => s[random.Next(s.Length)]).ToArray());
             }
             return code;
+        }
+
+        private int GetConfigValue(string key, int defaultValue)
+        {
+            var config = _context.SystemConfigurations
+                .FirstOrDefault(c => c.ConfigKey == key);
+
+            return config != null ? int.Parse(config.ConfigValue) : defaultValue;
         }
 
         private void AddErrors(IdentityResult result)
@@ -368,6 +417,15 @@ namespace BinIT2WinIT.Controllers
                 return Redirect(returnUrl);
             }
             return RedirectToAction("Index", "Home");
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _context.Dispose();
+            }
+            base.Dispose(disposing);
         }
     }
 }

@@ -1,0 +1,118 @@
+﻿@model IEnumerable<BinIT2WinIT.Models.DropOffPoint>
+
+@{
+    ViewBag.Title = "Officer Deployment";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-4">
+    <h2><i class="fas fa-user-shield text-secondary"></i> Officer Deployment</h2>
+    <p class="text-muted">View and manage Collection Officer distribution across regions.</p>
+    <hr />
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-primary text-white shadow">
+                <div class="card-body text-center">
+                    <h3>@ViewBag.TotalOfficers</h3>
+                    <p class="mb-0">Total Officers</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-success text-white shadow">
+                <div class="card-body text-center">
+                    <h3>@ViewBag.TotalRegions</h3>
+                    <p class="mb-0">Total Regions</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-warning text-dark shadow">
+                <div class="card-body text-center">
+                    <h3>@ViewBag.UnassignedOfficers</h3>
+                    <p class="mb-0">Unassigned Officers</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Deployment Table -->
+    <div class="card shadow">
+        <div class="card-header bg-dark text-white">
+            <i class="fas fa-list"></i> Deployment Overview
+        </div>
+        <div class="card-body">
+            @if (Model != null && Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Region</th>
+                                <th>City</th>
+                                <th>Officers Deployed</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var region in Model)
+                            {
+                                <tr>
+                                    <td><strong>@region.Name</strong></td>
+                                    <td>@region.City</td>
+                                    <td>
+                                        <span class="badge bg-primary">@ViewBag.OfficerCounts[region.DropOffPointId]</span>
+                                        @if (ViewBag.OfficerCounts[region.DropOffPointId] == 0)
+                                        {
+                                            <span class="badge bg-danger ms-1">⚠️ No Officers</span>
+                                        }
+                                        else if (ViewBag.OfficerCounts[region.DropOffPointId] < 2)
+                                        {
+                                            <span class="badge bg-warning ms-1">⚠️ Low Staff</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-success ms-1">✅ Adequate</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (region.IsActive)
+                                        {
+                                            <span class="badge bg-success">Active</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">Inactive</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <a href="@Url.Action("AssignOfficer", "Admin", new { id = region.DropOffPointId })" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-user-plus"></i> Assign Officer
+                                        </a>
+                                        <a href="@Url.Action("CommunityDetails", "Admin", new { id = region.DropOffPointId })" class="btn btn-sm btn-info">
+                                            <i class="fas fa-eye"></i> View
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-4">
+                    <i class="fas fa-map-pin fa-3x text-muted"></i>
+                    <p class="text-muted mt-2">No regions found.</p>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="mt-3">
+        @Html.ActionLink("← Back to Dashboard", "Dashboard", "Admin", null, new { @class = "btn btn-outline-secondary" })
+    </div>
+</div>

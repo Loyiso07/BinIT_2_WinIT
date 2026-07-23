@@ -8,6 +8,7 @@
     <!-- Styles -->
     <link rel="stylesheet" href="~/Content/bootstrap.min.css" />
     <link rel="stylesheet" href="~/Content/site.css" />
+    <link rel="stylesheet" href="~/Content/dark-mode.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
@@ -16,6 +17,7 @@
         body {
             font-family: 'Inter', sans-serif;
             background-color: #F8FAF9;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         /* ===== NAVIGATION ===== */
@@ -23,6 +25,7 @@
             background: linear-gradient(135deg, #1B5E20 0%, #2E7D32 50%, #388E3C 100%);
             padding: 12px 0;
             box-shadow: 0 4px 20px rgba(27, 94, 32, 0.25);
+            transition: background 0.3s ease;
         }
 
             .navbar-custom .navbar-brand {
@@ -95,12 +98,29 @@
                 border-color: white;
             }
 
+        #darkModeToggle {
+            color: white;
+            font-size: 1.2rem;
+            padding: 6px 12px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+        }
+
+            #darkModeToggle:hover {
+                background: rgba(255, 255, 255, 0.15);
+                transform: scale(1.1);
+            }
+
         /* ===== FOOTER ===== */
         .footer-custom {
             background: #1A1A2E;
             color: rgba(255, 255, 255, 0.7);
             padding: 30px 0 20px;
             margin-top: 40px;
+            transition: background 0.3s ease;
         }
 
             .footer-custom a {
@@ -120,6 +140,7 @@
             padding: 60px 0;
             border-radius: 10px;
             margin-bottom: 30px;
+            transition: background 0.3s ease;
         }
 
             .hero-section h1 {
@@ -137,6 +158,7 @@
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             height: 100%;
+            background: white;
         }
 
             .feature-card:hover {
@@ -183,6 +205,11 @@
 
             .stat-number {
                 font-size: 1.8rem;
+            }
+
+            #darkModeToggle {
+                font-size: 1rem;
+                padding: 4px 10px;
             }
         }
     </style>
@@ -259,7 +286,7 @@
                             {
                                 <li><a class="dropdown-item" href="#"><i class="fas fa-user"></i> Profile</a></li>
                                 <li><hr class="dropdown-divider" /></li>
-                                <li><a class="dropdown-item" href="@Url.Action("Logout", "Account")"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                                <!-- Logout removed from dropdown -->
                             }
                             else
                             {
@@ -271,6 +298,11 @@
                 </ul>
 
                 <div class="d-flex align-items-center">
+                    <!-- Dark Mode Toggle -->
+                    <button id="darkModeToggle" class="btn" title="Toggle Dark Mode">
+                        <i class="fas fa-moon" id="darkModeIcon"></i>
+                    </button>
+
                     @if (User.Identity.IsAuthenticated)
                     {
                         <span class="text-white me-2 small">
@@ -294,9 +326,9 @@
         </div>
     </nav>
 
-    <!-- ===== MAIN CONTENT ===== -->
+    <!-- ===== MAIN CONTENT - THIS IS WHERE PAGE CONTENT GOES ===== -->
     <div class="container my-4">
-        @RenderBody()
+        @RenderBody()  <!-- ✅ THIS MUST BE HERE -->
     </div>
 
     <!-- ===== FOOTER ===== -->
@@ -335,6 +367,8 @@
     <!-- ===== SCRIPTS ===== -->
     <script src="~/Scripts/jquery-3.6.0.min.js"></script>
     <script src="~/Scripts/bootstrap.bundle.min.js"></script>
+    <script src="~/Scripts/dark-mode.js"></script>
     @RenderSection("Scripts", required: false)
+
 </body>
 </html>
