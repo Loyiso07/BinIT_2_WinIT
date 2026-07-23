@@ -62,7 +62,6 @@ namespace BinIT2WinIT.Controllers
                 }
                 catch (System.Data.Entity.Validation.DbEntityValidationException ex)
                 {
-                    // ✅ LOG DETAILED ERRORS
                     var errors = new List<string>();
                     foreach (var validationErrors in ex.EntityValidationErrors)
                     {
@@ -107,13 +106,12 @@ namespace BinIT2WinIT.Controllers
         // ============================================================
         // GET: Officer/Pending
         // ============================================================
-        // GET: Officer/Pending
         public async Task<ActionResult> Pending()
         {
             var submissions = await _context.RecyclingSubmissions
-                .Include(s => s.Resident)          // ← IMPORTANT!
-                .Include(s => s.MaterialType)      // ← IMPORTANT!
-                .Include(s => s.DropOffPoint)      // ← IMPORTANT!
+                .Include(s => s.Resident)
+                .Include(s => s.MaterialType)
+                .Include(s => s.DropOffPoint)
                 .Where(s => s.Status == "Pending")
                 .OrderBy(s => s.SubmissionDate)
                 .ToListAsync();
@@ -339,11 +337,25 @@ namespace BinIT2WinIT.Controllers
         }
 
         // ============================================================
-        // GET: Officer/Leaderboard (Redirect to Resident Leaderboard)
+        // ✅ FIXED: GET: Officer/Leaderboard (Shows leaderboard directly)
         // ============================================================
-        public ActionResult Leaderboard()
+        public async Task<ActionResult> Leaderboard()
         {
-            return RedirectToAction("Leaderboard", "Resident");
+            // Get top 10 residents by points
+            var topResidents = await _context.Residents
+                .OrderByDescending(r => r.PointsBalance)
+                .Take(10)
+                .ToListAsync();
+
+            // Get current officer info
+            var userId = User.Identity.GetUserId();
+            var currentResident = await _context.Residents
+                .FirstOrDefaultAsync(r => r.UserId == userId);
+
+            ViewBag.CurrentResident = currentResident;
+            ViewBag.CurrentUserId = userId;
+
+            return View(topResidents);
         }
 
         // ============================================================

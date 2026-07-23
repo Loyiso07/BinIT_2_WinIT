@@ -30,7 +30,6 @@ namespace BinIT2WinIT.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            // ✅ FIXED: Use Find (synchronous) instead of FindAsync
             var user = _context.Users.Find(userId);
 
             if (user == null)
@@ -57,7 +56,6 @@ namespace BinIT2WinIT.Controllers
                 await _context.SaveChangesAsync();
             }
 
-            // Get statistics
             ViewBag.TotalResidents = await _context.Residents.CountAsync();
             ViewBag.TotalSubmissions = await _context.RecyclingSubmissions.CountAsync();
             ViewBag.TotalPoints = await _context.PointsTransactions.SumAsync(t => (int?)t.Amount) ?? 0;
@@ -86,7 +84,6 @@ namespace BinIT2WinIT.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> DeactivateUser(string userId)
         {
-            // ✅ FIXED: Use Find (synchronous) instead of FindAsync
             var user = _context.Users.Find(userId);
 
             if (user == null)
@@ -109,7 +106,6 @@ namespace BinIT2WinIT.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> ActivateUser(string userId)
         {
-            // ✅ FIXED: Use Find (synchronous) instead of FindAsync
             var user = _context.Users.Find(userId);
 
             if (user == null)
@@ -380,7 +376,6 @@ namespace BinIT2WinIT.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> DeleteDropOffPoint(int id)
         {
-            // ✅ FIXED: Use Find (synchronous) instead of FindAsync
             var point = _context.DropOffPoints.Find(id);
 
             if (point == null)
@@ -486,24 +481,6 @@ namespace BinIT2WinIT.Controllers
         }
 
         // ============================================================
-        // Helper: Generate Employee Number
-        // ============================================================
-        private string GenerateEmployeeNumber()
-        {
-            var random = new Random();
-            return "EMP" + random.Next(10000, 99999).ToString();
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                _context.Dispose();
-            }
-            base.Dispose(disposing);
-        }
-
-        // ============================================================
         // GET: Admin/PointsRates
         // ============================================================
         public async Task<ActionResult> PointsRates()
@@ -539,9 +516,9 @@ namespace BinIT2WinIT.Controllers
         {
             if (ModelState.IsValid)
             {
-                // Deactivate any existing active rate for this material
-                var existingActive = await _context.PointsRates
-                    .FirstOrDefaultAsync(p => p.MaterialTypeId == model.MaterialTypeId && p.IsActive);
+                // ✅ FIX: Use synchronous Find for EF6 compatibility
+                var existingActive = _context.PointsRates
+                    .FirstOrDefault(p => p.MaterialTypeId == model.MaterialTypeId && p.IsActive);
 
                 if (existingActive != null)
                 {
@@ -569,11 +546,12 @@ namespace BinIT2WinIT.Controllers
         }
 
         // ============================================================
-        // GET: Admin/DeactivateRate (Matches your view)
+        // GET: Admin/DeactivateRate
         // ============================================================
         public async Task<ActionResult> DeactivateRate(int id)
         {
-            var rate = await _context.PointsRates.FindAsync(id);
+            // ✅ FIX: Use synchronous Find for EF6 compatibility
+            var rate = _context.PointsRates.Find(id);
 
             if (rate == null)
             {
@@ -587,6 +565,24 @@ namespace BinIT2WinIT.Controllers
 
             TempData["SuccessMessage"] = "✅ Points rate deactivated successfully!";
             return RedirectToAction("PointsRates");
+        }
+
+        // ============================================================
+        // Helper: Generate Employee Number
+        // ============================================================
+        private string GenerateEmployeeNumber()
+        {
+            var random = new Random();
+            return "EMP" + random.Next(10000, 99999).ToString();
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _context.Dispose();
+            }
+            base.Dispose(disposing);
         }
     }
 }

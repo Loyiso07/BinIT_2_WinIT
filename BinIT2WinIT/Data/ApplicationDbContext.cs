@@ -1,8 +1,8 @@
-﻿using BinIT2WinIT.Models;
-using Microsoft.AspNet.Identity.EntityFramework;
+﻿using Microsoft.AspNet.Identity.EntityFramework;
 using System.Data.Entity;
+using BinIT2WinIT.Models;
 
-namespace BinIT2WinIT.Data  // Make sure namespace matches your project
+namespace BinIT2WinIT.Data
 {
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
@@ -10,7 +10,6 @@ namespace BinIT2WinIT.Data  // Make sure namespace matches your project
         {
         }
 
-        // ✅ CUSTOM TABLES - These are fine
         public DbSet<Resident> Residents { get; set; }
         public DbSet<CollectionOfficer> CollectionOfficers { get; set; }
         public DbSet<Administrator> Administrators { get; set; }
@@ -22,15 +21,34 @@ namespace BinIT2WinIT.Data  // Make sure namespace matches your project
         public DbSet<PointsTransaction> PointsTransactions { get; set; }
         public DbSet<CollectionEvent> CollectionEvents { get; set; }
         public DbSet<SystemConfiguration> SystemConfigurations { get; set; }
-
-        // ❌ REMOVE THIS LINE:
-        // public System.Data.Entity.DbSet<BinIT2WinIT.Models.ApplicationUser> ApplicationUsers { get; set; }
+        public DbSet<ReferralTransaction> ReferralTransactions { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            // Configure relationships and constraints here
+            // ✅ Specify column length for ReferralCode
+            modelBuilder.Entity<Resident>()
+                .Property(r => r.ReferralCode)
+                .HasMaxLength(50);
+
+            // ❌ REMOVED HasPrecision (not needed for double)
+            // modelBuilder.Entity<RecyclingSubmission>()
+            //     .Property(s => s.Weight)
+            //     .HasPrecision(18, 2);
+
+            // Configure ReferralTransaction with NO CASCADE DELETE
+            modelBuilder.Entity<ReferralTransaction>()
+                .HasRequired(r => r.Referrer)
+                .WithMany(r => r.ReferralsMade)
+                .HasForeignKey(r => r.ReferrerId)
+                .WillCascadeOnDelete(false);
+
+            modelBuilder.Entity<ReferralTransaction>()
+                .HasRequired(r => r.NewResident)
+                .WithMany()
+                .HasForeignKey(r => r.NewResidentId)
+                .WillCascadeOnDelete(false);
         }
 
         public static ApplicationDbContext Create()

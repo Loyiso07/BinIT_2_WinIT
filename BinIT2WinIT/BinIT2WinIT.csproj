@@ -37,7 +37,9 @@
     <OutputPath>bin\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <WarningLevel>5</WarningLevel>
+    <DocumentationFile>
+    </DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -246,6 +248,10 @@
     <Compile Include="Migrations\202607221747400_AddDropOffPointToOfficer.Designer.cs">
       <DependentUpon>202607221747400_AddDropOffPointToOfficer.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202607231451146_AddReferralTransaction.cs" />
+    <Compile Include="Migrations\202607231451146_AddReferralTransaction.Designer.cs">
+      <DependentUpon>202607231451146_AddReferralTransaction.cs</DependentUpon>
+    </Compile>
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Data\ApplicationDbContext.cs" />
@@ -274,6 +280,7 @@
     <Compile Include="Models\PointsRate.cs" />
     <Compile Include="Models\PointsTransaction.cs" />
     <Compile Include="Models\RecyclingSubmission.cs" />
+    <Compile Include="Models\ReferralTransaction.cs" />
     <Compile Include="Models\Resident.cs" />
     <Compile Include="Models\ResidentViewModels.cs" />
     <Compile Include="Models\SystemConfiguration.cs" />
@@ -365,6 +372,8 @@
     <Content Include="Views\Admin\Communities.cshtml" />
     <Content Include="Views\Admin\OfficerDeployment.cshtml" />
     <Content Include="Views\Admin\CommunityLeaderboard.cshtml" />
+    <Content Include="Views\Officer\Leaderboard.cshtml" />
+    <Content Include="Views\Admin\CreatePointsRate.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
@@ -409,10 +418,16 @@
     <EmbeddedResource Include="Migrations\202607221747400_AddDropOffPointToOfficer.resx">
       <DependentUpon>202607221747400_AddDropOffPointToOfficer.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202607231451146_AddReferralTransaction.resx">
+      <DependentUpon>202607231451146_AddReferralTransaction.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
@@ -434,6 +449,9 @@
           <CustomServerUrl>
           </CustomServerUrl>
           <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+          <servers defaultServer="SelfHostServer">
+            <server name="SelfHostServer" exePath="" cmdArgs="" url="http://localhost:62267/" workingDir="" />
+          </servers>
         </WebProjectProperties>
       </FlavorProperties>
     </VisualStudio>

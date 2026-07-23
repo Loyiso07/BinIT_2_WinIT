@@ -98,7 +98,6 @@
                 border-color: white;
             }
 
-        /* Dark mode toggle button */
         #darkModeToggle {
             color: white;
             font-size: 1.2rem;
@@ -287,15 +286,7 @@
                             {
                                 <li><a class="dropdown-item" href="#"><i class="fas fa-user"></i> Profile</a></li>
                                 <li><hr class="dropdown-divider" /></li>
-                                <li>
-                                    @using (Html.BeginForm("Logout", "Account", FormMethod.Post, new { id = "logoutForm" }))
-                                    {
-                                        @Html.AntiForgeryToken()
-                                        <a class="dropdown-item" href="javascript:document.getElementById('logoutForm').submit()">
-                                            <i class="fas fa-sign-out-alt"></i> Logout
-                                        </a>
-                                    }
-                                </li>
+                                <!-- Logout removed from dropdown -->
                             }
                             else
                             {
@@ -335,9 +326,9 @@
         </div>
     </nav>
 
-    <!-- ===== MAIN CONTENT ===== -->
+    <!-- ===== MAIN CONTENT - THIS IS WHERE PAGE CONTENT GOES ===== -->
     <div class="container my-4">
-        @RenderBody()
+        @RenderBody()  <!-- ✅ THIS MUST BE HERE -->
     </div>
 
     <!-- ===== FOOTER ===== -->
