@@ -41,17 +41,40 @@ namespace BinIT2WinIT.Controllers
                     return RedirectToAction("Login", "Account");
                 }
 
+                // ✅ ALL required fields populated
                 resident = new Resident
                 {
                     UserId = userId,
-                    FullName = user.FullName ?? user.UserName,
-                    PhoneNumber = user.PhoneNumber ?? "",
-                    CreatedAt = DateTime.Now,
+                    FullName = user.FullName ?? user.UserName ?? "Resident User",
+                    PhoneNumber = user.PhoneNumber ?? "000-000-0000",
+                    Address = user.Address ?? "Not provided",
+                    Suburb = user.Suburb ?? "Not provided",
+                    City = user.City ?? "Not provided",
+                    PointsBalance = 0,
+                    InfluencerPoints = 0,
+                    TotalCO2Saved = 0,
+                    TotalReferrals = 0,
+                    ReferralCode = GenerateReferralCode(),
                     IsActive = true,
-                    ReferralCode = GenerateReferralCode()
+                    CreatedAt = DateTime.Now
                 };
+
                 _context.Residents.Add(resident);
-                await _context.SaveChangesAsync();
+
+                try
+                {
+                    await _context.SaveChangesAsync();
+                }
+                catch (System.Data.Entity.Validation.DbEntityValidationException ex)
+                {
+                    // ✅ Show detailed validation errors
+                    var errorMessages = ex.EntityValidationErrors
+                        .SelectMany(x => x.ValidationErrors)
+                        .Select(x => $"Property: {x.PropertyName}, Error: {x.ErrorMessage}");
+                    var fullErrorMessage = string.Join("; ", errorMessages);
+                    System.Diagnostics.Debug.WriteLine($"Validation Error: {fullErrorMessage}");
+                    throw new Exception($"Validation failed: {fullErrorMessage}", ex);
+                }
 
                 await AwardWelcomeBonus(resident.ResidentId);
             }
@@ -160,7 +183,6 @@ namespace BinIT2WinIT.Controllers
             var currentResident = await _context.Residents
                 .FirstOrDefaultAsync(r => r.UserId == userId);
 
-            // ✅ CALCULATE RANK
             int rank = 0;
             if (currentResident != null)
             {
@@ -206,15 +228,16 @@ namespace BinIT2WinIT.Controllers
         {
             var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
             var random = new Random();
-            var code = new string(Enumerable.Repeat(chars, 8)
-                .Select(s => s[random.Next(s.Length)]).ToArray());
+            string code;
 
             // Ensure uniqueness
-            while (_context.Residents.Any(r => r.ReferralCode == code))
+            do
             {
                 code = new string(Enumerable.Repeat(chars, 8)
                     .Select(s => s[random.Next(s.Length)]).ToArray());
             }
+            while (_context.Residents.Any(r => r.ReferralCode == code));
+
             return code;
         }
 

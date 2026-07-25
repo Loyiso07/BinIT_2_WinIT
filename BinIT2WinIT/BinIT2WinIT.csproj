@@ -252,6 +252,14 @@
     <Compile Include="Migrations\202607231451146_AddReferralTransaction.Designer.cs">
       <DependentUpon>202607231451146_AddReferralTransaction.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202607252020346_AddAdminAudit.cs" />
+    <Compile Include="Migrations\202607252020346_AddAdminAudit.Designer.cs">
+      <DependentUpon>202607252020346_AddAdminAudit.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202607252036226_AddAdminAudit1.cs" />
+    <Compile Include="Migrations\202607252036226_AddAdminAudit1.Designer.cs">
+      <DependentUpon>202607252036226_AddAdminAudit1.cs</DependentUpon>
+    </Compile>
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Data\ApplicationDbContext.cs" />
@@ -268,13 +276,13 @@
       <DependentUpon>202607191336497_InitialCreate.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
+    <Compile Include="Models\AdminCreationAudit.cs" />
     <Compile Include="Models\Administrator.cs" />
+    <Compile Include="Models\AdminViewModels.cs" />
     <Compile Include="Models\ApplicationUser.cs" />
-    <Compile Include="Models\AssignOfficerViewModel.cs" />
     <Compile Include="Models\CO2Factor.cs" />
     <Compile Include="Models\CollectionEvent.cs" />
     <Compile Include="Models\CollectionOfficer.cs" />
-    <Compile Include="Models\CreateOfficerViewModel.cs" />
     <Compile Include="Models\DropOffPoint.cs" />
     <Compile Include="Models\MaterialType.cs" />
     <Compile Include="Models\PointsRate.cs" />
@@ -374,6 +382,9 @@
     <Content Include="Views\Admin\CommunityLeaderboard.cshtml" />
     <Content Include="Views\Officer\Leaderboard.cshtml" />
     <Content Include="Views\Admin\CreatePointsRate.cshtml" />
+    <Content Include="Views\Admin\ManageAdmins.cshtml" />
+    <Content Include="Views\Admin\AddAdmin.cshtml" />
+    <Content Include="Views\Admin\AdminAudit.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
@@ -420,6 +431,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202607231451146_AddReferralTransaction.resx">
       <DependentUpon>202607231451146_AddReferralTransaction.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202607252020346_AddAdminAudit.resx">
+      <DependentUpon>202607252020346_AddAdminAudit.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202607252036226_AddAdminAudit1.resx">
+      <DependentUpon>202607252036226_AddAdminAudit1.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

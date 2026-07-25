@@ -10,6 +10,7 @@ namespace BinIT2WinIT.Data
         {
         }
 
+        // Existing DbSets
         public DbSet<Resident> Residents { get; set; }
         public DbSet<CollectionOfficer> CollectionOfficers { get; set; }
         public DbSet<Administrator> Administrators { get; set; }
@@ -23,19 +24,17 @@ namespace BinIT2WinIT.Data
         public DbSet<SystemConfiguration> SystemConfigurations { get; set; }
         public DbSet<ReferralTransaction> ReferralTransactions { get; set; }
 
+        //  Admin Creation Audit
+        public DbSet<AdminCreationAudit> AdminCreationAudits { get; set; }
+
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            // ✅ Specify column length for ReferralCode
+            //  Specify column length for ReferralCode
             modelBuilder.Entity<Resident>()
                 .Property(r => r.ReferralCode)
                 .HasMaxLength(50);
-
-            // ❌ REMOVED HasPrecision (not needed for double)
-            // modelBuilder.Entity<RecyclingSubmission>()
-            //     .Property(s => s.Weight)
-            //     .HasPrecision(18, 2);
 
             // Configure ReferralTransaction with NO CASCADE DELETE
             modelBuilder.Entity<ReferralTransaction>()
@@ -48,6 +47,19 @@ namespace BinIT2WinIT.Data
                 .HasRequired(r => r.NewResident)
                 .WithMany()
                 .HasForeignKey(r => r.NewResidentId)
+                .WillCascadeOnDelete(false);
+
+            //  Configure AdminCreationAudit with NO CASCADE DELETE
+            modelBuilder.Entity<AdminCreationAudit>()
+                .HasRequired(a => a.NewAdmin)
+                .WithMany()
+                .HasForeignKey(a => a.NewAdminUserId)
+                .WillCascadeOnDelete(false);
+
+            modelBuilder.Entity<AdminCreationAudit>()
+                .HasRequired(a => a.CreatedBy)
+                .WithMany()
+                .HasForeignKey(a => a.CreatedByUserId)
                 .WillCascadeOnDelete(false);
         }
 

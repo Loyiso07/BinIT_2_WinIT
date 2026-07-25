@@ -30,7 +30,7 @@ namespace BinIT2WinIT.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            var user = _context.Users.Find(userId);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
 
             if (user == null)
             {
@@ -49,7 +49,8 @@ namespace BinIT2WinIT.Controllers
                     Email = user.Email,
                     Department = "System Administration",
                     IsActive = true,
-                    CreatedAt = DateTime.Now
+                    CreatedAt = DateTime.Now,
+                    CreatedByUserId = userId
                 };
 
                 _context.Administrators.Add(admin);
@@ -63,6 +64,190 @@ namespace BinIT2WinIT.Controllers
                 .Where(s => s.Status == "Pending").CountAsync();
 
             return View(admin);
+        }
+
+        // ============================================================
+        // GET: Admin/ManageAdmins
+        // ============================================================
+        public async Task<ActionResult> ManageAdmins()
+        {
+            var admins = await _context.Administrators
+                .Include(a => a.User)
+                .Include(a => a.CreatedByUser)
+                .OrderByDescending(a => a.CreatedAt)
+                .ToListAsync();
+
+            return View(admins);
+        }
+
+        // ============================================================
+        // GET: Admin/AddAdmin
+        // ============================================================
+        public ActionResult AddAdmin()
+        {
+            return View();
+        }
+
+        // ============================================================
+        // POST: Admin/AddAdmin
+        // ============================================================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> AddAdmin(AddAdminViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var currentUserId = User.Identity.GetUserId();
+                var userManager = HttpContext.GetOwinContext().GetUserManager<ApplicationUserManager>();
+
+                var existingUser = await userManager.FindByEmailAsync(model.Email);
+                if (existingUser != null)
+                {
+                    if (await userManager.IsInRoleAsync(existingUser.Id, "Administrator"))
+                    {
+                        ModelState.AddModelError("", "This user is already an administrator.");
+                        return View(model);
+                    }
+
+                    await userManager.AddToRoleAsync(existingUser.Id, "Administrator");
+
+                    var admin = new Administrator
+                    {
+                        UserId = existingUser.Id,
+                        FullName = existingUser.FullName ?? model.FullName,
+                        Email = model.Email,
+                        Department = model.Department,
+                        CreatedAt = DateTime.Now,
+                        IsActive = true,
+                        CreatedByUserId = currentUserId
+                    };
+
+                    _context.Administrators.Add(admin);
+
+                    var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.Id == currentUserId);
+                    var audit = new AdminCreationAudit
+                    {
+                        NewAdminUserId = existingUser.Id,
+                        CreatedByUserId = currentUserId,
+                        CreatedAt = DateTime.Now,
+                        NewAdminEmail = model.Email,
+                        NewAdminName = existingUser.FullName ?? model.FullName,
+                        CreatedByName = currentUser?.FullName ?? "Unknown"
+                    };
+                    _context.AdminCreationAudits.Add(audit);
+
+                    await _context.SaveChangesAsync();
+
+                    TempData["SuccessMessage"] = $"✅ {model.FullName} added as an administrator successfully!";
+                    return RedirectToAction("ManageAdmins");
+                }
+
+                var newUser = new ApplicationUser
+                {
+                    UserName = model.Email,
+                    Email = model.Email,
+                    FullName = model.FullName,
+                    PhoneNumber = model.PhoneNumber ?? "",
+                    IsActive = true,
+                    CreatedAt = DateTime.Now
+                };
+
+                var result = await userManager.CreateAsync(newUser, model.Password);
+                if (result.Succeeded)
+                {
+                    await userManager.AddToRoleAsync(newUser.Id, "Administrator");
+
+                    var admin = new Administrator
+                    {
+                        UserId = newUser.Id,
+                        FullName = model.FullName,
+                        Email = model.Email,
+                        Department = model.Department,
+                        CreatedAt = DateTime.Now,
+                        IsActive = true,
+                        CreatedByUserId = currentUserId
+                    };
+
+                    _context.Administrators.Add(admin);
+
+                    var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.Id == currentUserId);
+                    var audit = new AdminCreationAudit
+                    {
+                        NewAdminUserId = newUser.Id,
+                        CreatedByUserId = currentUserId,
+                        CreatedAt = DateTime.Now,
+                        NewAdminEmail = model.Email,
+                        NewAdminName = model.FullName,
+                        CreatedByName = currentUser?.FullName ?? "Unknown"
+                    };
+                    _context.AdminCreationAudits.Add(audit);
+
+                    await _context.SaveChangesAsync();
+
+                    TempData["SuccessMessage"] = $"✅ {model.FullName} added as an administrator successfully!";
+                    return RedirectToAction("ManageAdmins");
+                }
+
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError("", error);
+                }
+            }
+
+            return View(model);
+        }
+
+        // ============================================================
+        // GET: Admin/AdminAudit
+        // ============================================================
+        public async Task<ActionResult> AdminAudit()
+        {
+            var audits = await _context.AdminCreationAudits
+                .OrderByDescending(a => a.CreatedAt)
+                .ToListAsync();
+
+            return View(audits);
+        }
+
+        // ============================================================
+        // POST: Admin/RemoveAdmin
+        // ============================================================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> RemoveAdmin(string userId)
+        {
+            var currentUserId = User.Identity.GetUserId();
+
+            if (userId == currentUserId)
+            {
+                TempData["ErrorMessage"] = "❌ You cannot remove yourself as an administrator.";
+                return RedirectToAction("ManageAdmins");
+            }
+
+            var adminCount = await _context.Administrators.CountAsync();
+            if (adminCount <= 1)
+            {
+                TempData["ErrorMessage"] = "❌ Cannot remove the last administrator.";
+                return RedirectToAction("ManageAdmins");
+            }
+
+            var userManager = HttpContext.GetOwinContext().GetUserManager<ApplicationUserManager>();
+            var user = await userManager.FindByIdAsync(userId);
+            if (user != null)
+            {
+                await userManager.RemoveFromRoleAsync(userId, "Administrator");
+
+                var admin = await _context.Administrators.FirstOrDefaultAsync(a => a.UserId == userId);
+                if (admin != null)
+                {
+                    _context.Administrators.Remove(admin);
+                    await _context.SaveChangesAsync();
+                }
+
+                TempData["SuccessMessage"] = $"✅ {user.FullName ?? user.Email} removed as an administrator.";
+            }
+
+            return RedirectToAction("ManageAdmins");
         }
 
         // ============================================================
@@ -84,7 +269,7 @@ namespace BinIT2WinIT.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> DeactivateUser(string userId)
         {
-            var user = _context.Users.Find(userId);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
 
             if (user == null)
             {
@@ -106,7 +291,7 @@ namespace BinIT2WinIT.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> ActivateUser(string userId)
         {
-            var user = _context.Users.Find(userId);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
 
             if (user == null)
             {
@@ -306,7 +491,7 @@ namespace BinIT2WinIT.Controllers
             if (ModelState.IsValid)
             {
                 var officer = await _context.CollectionOfficers
-                    .FindAsync(model.OfficerId);
+                    .FirstOrDefaultAsync(o => o.OfficerId == model.OfficerId);
 
                 if (officer == null)
                 {
@@ -318,7 +503,7 @@ namespace BinIT2WinIT.Controllers
                 await _context.SaveChangesAsync();
 
                 var pointName = model.DropOffPointId.HasValue
-                    ? (await _context.DropOffPoints.FindAsync(model.DropOffPointId.Value))?.Name
+                    ? (await _context.DropOffPoints.FirstOrDefaultAsync(d => d.DropOffPointId == model.DropOffPointId.Value))?.Name
                     : "No Region Assigned";
 
                 TempData["SuccessMessage"] = $"✅ Officer '{officer.FullName}' assigned to '{pointName}' successfully!";
@@ -376,7 +561,7 @@ namespace BinIT2WinIT.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> DeleteDropOffPoint(int id)
         {
-            var point = _context.DropOffPoints.Find(id);
+            var point = await _context.DropOffPoints.FirstOrDefaultAsync(d => d.DropOffPointId == id);
 
             if (point == null)
             {
@@ -516,7 +701,6 @@ namespace BinIT2WinIT.Controllers
         {
             if (ModelState.IsValid)
             {
-                // ✅ FIX: Use synchronous Find for EF6 compatibility
                 var existingActive = _context.PointsRates
                     .FirstOrDefault(p => p.MaterialTypeId == model.MaterialTypeId && p.IsActive);
 
@@ -550,7 +734,6 @@ namespace BinIT2WinIT.Controllers
         // ============================================================
         public async Task<ActionResult> DeactivateRate(int id)
         {
-            // ✅ FIX: Use synchronous Find for EF6 compatibility
             var rate = _context.PointsRates.Find(id);
 
             if (rate == null)
