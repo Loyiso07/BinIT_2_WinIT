@@ -268,6 +268,10 @@
     <Compile Include="Migrations\202607260812544_AddCommunityToResident.Designer.cs">
       <DependentUpon>202607260812544_AddCommunityToResident.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202607261246181_AddAnnouncements.cs" />
+    <Compile Include="Migrations\202607261246181_AddAnnouncements.Designer.cs">
+      <DependentUpon>202607261246181_AddAnnouncements.cs</DependentUpon>
+    </Compile>
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Data\ApplicationDbContext.cs" />
@@ -287,6 +291,7 @@
     <Compile Include="Models\AdminCreationAudit.cs" />
     <Compile Include="Models\Administrator.cs" />
     <Compile Include="Models\AdminViewModels.cs" />
+    <Compile Include="Models\Announcement.cs" />
     <Compile Include="Models\ApplicationUser.cs" />
     <Compile Include="Models\CO2Factor.cs" />
     <Compile Include="Models\CollectionEvent.cs" />
@@ -397,6 +402,10 @@
     <Content Include="Views\Officer\CommunityStatus.cshtml" />
     <Content Include="Views\Admin\CommunityStatuses.cshtml" />
     <Content Include="Views\Admin\CommunityDetails.cshtml" />
+    <Content Include="Views\Admin\Announcements.cshtml" />
+    <Content Include="Views\Admin\CreateAnnouncement.cshtml" />
+    <Content Include="Views\Resident\ViewProfile.cshtml" />
+    <Content Include="Views\Resident\EditProfile.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
@@ -455,6 +464,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202607260812544_AddCommunityToResident.resx">
       <DependentUpon>202607260812544_AddCommunityToResident.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202607261246181_AddAnnouncements.resx">
+      <DependentUpon>202607261246181_AddAnnouncements.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

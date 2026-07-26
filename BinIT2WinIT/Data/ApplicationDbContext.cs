@@ -26,6 +26,8 @@ namespace BinIT2WinIT.Data
 
         public DbSet<CommunityStatus> CommunityStatuses { get; set; }
 
+        public DbSet<Announcement> Announcements { get; set; }
+
         //  Admin Creation Audit
         public DbSet<AdminCreationAudit> AdminCreationAudits { get; set; }
 

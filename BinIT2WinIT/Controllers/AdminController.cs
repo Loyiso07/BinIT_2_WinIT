@@ -305,7 +305,6 @@ namespace BinIT2WinIT.Controllers
             TempData["SuccessMessage"] = $"✅ User '{user.Email}' has been activated.";
             return RedirectToAction("Users");
         }
-
         // ============================================================
         // GET: Admin/Communities
         // ============================================================
@@ -320,7 +319,6 @@ namespace BinIT2WinIT.Controllers
             var residentCounts = new Dictionary<int, int>();
             var submissionCounts = new Dictionary<int, int>();
             var pointsCounts = new Dictionary<int, int>();
-            var communityStatuses = new Dictionary<int, CommunityStatus>();
 
             foreach (var community in communities)
             {
@@ -328,7 +326,10 @@ namespace BinIT2WinIT.Controllers
                     .Where(o => o.DropOffPointId == community.DropOffPointId)
                     .CountAsync();
 
-                residentCounts[community.DropOffPointId] = 0;
+                // ✅ Count residents linked to this community via DropOffPointId
+                residentCounts[community.DropOffPointId] = await _context.Residents
+                    .Where(r => r.DropOffPointId == community.DropOffPointId && r.IsActive)
+                    .CountAsync();
 
                 submissionCounts[community.DropOffPointId] = await _context.RecyclingSubmissions
                     .Where(s => s.DropOffPointId == community.DropOffPointId && s.Status == "Confirmed")
@@ -337,24 +338,19 @@ namespace BinIT2WinIT.Controllers
                 pointsCounts[community.DropOffPointId] = await _context.RecyclingSubmissions
                     .Where(s => s.DropOffPointId == community.DropOffPointId && s.Status == "Confirmed")
                     .SumAsync(s => (int?)s.Weight) ?? 0;
-
-                // ✅ Get latest community status
-                var latestStatus = await _context.CommunityStatuses
-                    .Where(c => c.DropOffPointId == community.DropOffPointId)
-                    .OrderByDescending(c => c.UpdatedDate)
-                    .FirstOrDefaultAsync();
-
-                if (latestStatus != null)
-                {
-                    communityStatuses[community.DropOffPointId] = latestStatus;
-                }
             }
 
             ViewBag.OfficerCounts = officerCounts;
             ViewBag.ResidentCounts = residentCounts;
             ViewBag.SubmissionCounts = submissionCounts;
             ViewBag.PointsCounts = pointsCounts;
-            ViewBag.CommunityStatuses = communityStatuses;
+
+            // ✅ Load community statuses as a List
+            var statuses = await _context.CommunityStatuses
+                .OrderByDescending(c => c.UpdatedDate)
+                .ToListAsync();
+
+            ViewBag.CommunityStatuses = statuses;
 
             return View(communities);
         }
@@ -798,6 +794,71 @@ namespace BinIT2WinIT.Controllers
                 .ToListAsync();
 
             return View(statuses);
+        }
+
+        // ============================================================
+        // GET: Admin/Announcements
+        // ============================================================
+        public async Task<ActionResult> Announcements()
+        {
+            var announcements = await _context.Announcements
+                .OrderByDescending(a => a.CreatedAt)
+                .ToListAsync();
+
+            return View(announcements);
+        }
+
+        // ============================================================
+        // GET: Admin/CreateAnnouncement
+        // ============================================================
+        public ActionResult CreateAnnouncement()
+        {
+            return View();
+        }
+
+        // ============================================================
+        // POST: Admin/CreateAnnouncement
+        // ============================================================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> CreateAnnouncement(Announcement model)
+        {
+            if (ModelState.IsValid)
+            {
+                model.CreatedAt = DateTime.Now;
+                model.IsActive = true;
+                model.CreatedBy = User.Identity.Name;
+
+                _context.Announcements.Add(model);
+                await _context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = "✅ Announcement created successfully!";
+                return RedirectToAction("Announcements");
+            }
+
+            return View(model);
+        }
+
+        // ============================================================
+        // POST: Admin/DeleteAnnouncement
+        // ============================================================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> DeleteAnnouncement(int id)
+        {
+            var announcement = await _context.Announcements.FindAsync(id);
+
+            if (announcement == null)
+            {
+                TempData["ErrorMessage"] = "Announcement not found.";
+                return RedirectToAction("Announcements");
+            }
+
+            _context.Announcements.Remove(announcement);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "✅ Announcement deleted successfully!";
+            return RedirectToAction("Announcements");
         }
     }
 }

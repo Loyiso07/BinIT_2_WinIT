@@ -41,43 +41,28 @@ namespace BinIT2WinIT.Controllers
                     return RedirectToAction("Login", "Account");
                 }
 
-                // ✅ ALL required fields populated
                 resident = new Resident
                 {
                     UserId = userId,
-                    FullName = user.FullName ?? user.UserName ?? "Resident User",
-                    PhoneNumber = user.PhoneNumber ?? "000-000-0000",
-                    Address = user.Address ?? "Not provided",
-                    Suburb = user.Suburb ?? "Not provided",
-                    City = user.City ?? "Not provided",
-                    PointsBalance = 0,
-                    InfluencerPoints = 0,
-                    TotalCO2Saved = 0,
-                    TotalReferrals = 0,
-                    ReferralCode = GenerateReferralCode(),
+                    FullName = user.FullName ?? user.UserName,
+                    PhoneNumber = user.PhoneNumber ?? "",
+                    CreatedAt = DateTime.Now,
                     IsActive = true,
-                    CreatedAt = DateTime.Now
+                    ReferralCode = GenerateReferralCode()
                 };
-
                 _context.Residents.Add(resident);
-
-                try
-                {
-                    await _context.SaveChangesAsync();
-                }
-                catch (System.Data.Entity.Validation.DbEntityValidationException ex)
-                {
-                    // ✅ Show detailed validation errors
-                    var errorMessages = ex.EntityValidationErrors
-                        .SelectMany(x => x.ValidationErrors)
-                        .Select(x => $"Property: {x.PropertyName}, Error: {x.ErrorMessage}");
-                    var fullErrorMessage = string.Join("; ", errorMessages);
-                    System.Diagnostics.Debug.WriteLine($"Validation Error: {fullErrorMessage}");
-                    throw new Exception($"Validation failed: {fullErrorMessage}", ex);
-                }
+                await _context.SaveChangesAsync();
 
                 await AwardWelcomeBonus(resident.ResidentId);
             }
+
+            // ✅ LOAD ANNOUNCEMENTS FOR RESIDENT
+            var announcements = await _context.Announcements
+                .Where(a => a.IsActive && (a.TargetAudience == "All" || a.TargetAudience == "Residents"))
+                .OrderByDescending(a => a.CreatedAt)
+                .ToListAsync();
+
+            ViewBag.Announcements = announcements;
 
             return View(resident);
         }
@@ -172,9 +157,6 @@ namespace BinIT2WinIT.Controllers
         // ============================================================
         // GET: Resident/Leaderboard
         // ============================================================
-        // ============================================================
-        // GET: Resident/Leaderboard
-        // ============================================================
         [Authorize(Roles = "Resident, CollectionOfficer")]
         public async Task<ActionResult> Leaderboard()
         {
@@ -192,6 +174,7 @@ namespace BinIT2WinIT.Controllers
 
             return View(topResidents);
         }
+
         // ============================================================
         // GET: Resident/InfluencerPoints
         // ============================================================
@@ -216,6 +199,131 @@ namespace BinIT2WinIT.Controllers
         }
 
         // ============================================================
+        // GET: Resident/ViewProfile
+        // ============================================================
+        public async Task<ActionResult> ViewProfile()
+        {
+            var userId = User.Identity.GetUserId();
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var resident = await _context.Residents
+                .Include(r => r.User)
+                .Include(r => r.Submissions)
+                .Include(r => r.Submissions.Select(s => s.MaterialType))
+                .Include(r => r.PointsTransactions)
+                .Include(r => r.Community)
+                .FirstOrDefaultAsync(r => r.UserId == userId);
+
+            if (resident == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            // Calculate additional stats
+            var totalSubmissions = resident.Submissions?.Count ?? 0;
+            var verifiedSubmissions = resident.Submissions?.Count(s => s.Status == "Confirmed") ?? 0;
+            var pendingSubmissions = resident.Submissions?.Count(s => s.Status == "Pending") ?? 0;
+            var rejectedSubmissions = resident.Submissions?.Count(s => s.Status == "Rejected") ?? 0;
+            var totalWeight = resident.Submissions?.Where(s => s.Status == "Confirmed").Sum(s => s.Weight) ?? 0;
+
+            ViewBag.TotalSubmissions = totalSubmissions;
+            ViewBag.VerifiedSubmissions = verifiedSubmissions;
+            ViewBag.PendingSubmissions = pendingSubmissions;
+            ViewBag.RejectedSubmissions = rejectedSubmissions;
+            ViewBag.TotalWeight = totalWeight;
+
+            // Calculate rank
+            var rank = await _context.Residents
+                .Where(r => r.PointsBalance > resident.PointsBalance)
+                .CountAsync() + 1;
+
+            ViewBag.Rank = rank;
+
+            return View(resident);
+        }
+
+        // ============================================================
+        // ✅ UPDATED: GET: Resident/EditProfile (with community dropdown)
+        // ============================================================
+        public async Task<ActionResult> EditProfile()
+        {
+            var userId = User.Identity.GetUserId();
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var resident = await _context.Residents
+                .Include(r => r.Community)
+                .FirstOrDefaultAsync(r => r.UserId == userId);
+
+            if (resident == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            // ✅ Load communities for dropdown
+            ViewBag.Communities = new SelectList(
+                _context.DropOffPoints.Where(d => d.IsActive).ToList(),
+                "DropOffPointId",
+                "Name",
+                resident.DropOffPointId
+            );
+
+            return View(resident);
+        }
+
+        // ============================================================
+        // ✅ UPDATED: POST: Resident/EditProfile (with community save)
+        // ============================================================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> EditProfile(Resident model)
+        {
+            if (ModelState.IsValid)
+            {
+                var userId = User.Identity.GetUserId();
+                var resident = await _context.Residents
+                    .FirstOrDefaultAsync(r => r.UserId == userId);
+
+                if (resident == null)
+                {
+                    return RedirectToAction("Login", "Account");
+                }
+
+                // ✅ Update all fields including community
+                resident.FullName = model.FullName;
+                resident.PhoneNumber = model.PhoneNumber;
+                resident.Address = model.Address;
+                resident.Suburb = model.Suburb;
+                resident.City = model.City;
+                resident.Province = model.Province;
+                resident.PostalCode = model.PostalCode;
+                resident.DropOffPointId = model.DropOffPointId;  // ✅ Save community
+
+                await _context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = "✅ Profile updated successfully!";
+                return RedirectToAction("ViewProfile");
+            }
+
+            // ✅ Reload communities if validation fails
+            ViewBag.Communities = new SelectList(
+                _context.DropOffPoints.Where(d => d.IsActive).ToList(),
+                "DropOffPointId",
+                "Name",
+                model.DropOffPointId
+            );
+
+            return View(model);
+        }
+
+        // ============================================================
         // Helper Methods
         // ============================================================
         private string GenerateReferralCode()
@@ -224,7 +332,6 @@ namespace BinIT2WinIT.Controllers
             var random = new Random();
             string code;
 
-            // Ensure uniqueness
             do
             {
                 code = new string(Enumerable.Repeat(chars, 8)
@@ -271,6 +378,5 @@ namespace BinIT2WinIT.Controllers
             }
             base.Dispose(disposing);
         }
-
     }
 }

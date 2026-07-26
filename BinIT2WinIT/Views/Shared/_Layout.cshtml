@@ -277,6 +277,7 @@
                         }
                     }
 
+                    <!-- ✅ ACCOUNT DROPDOWN - Only One! -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-user"></i> Account
@@ -284,9 +285,13 @@
                         <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                             @if (User.Identity.IsAuthenticated)
                             {
-                                <li><a class="dropdown-item" href="#"><i class="fas fa-user"></i> Profile</a></li>
-                                <li><hr class="dropdown-divider" /></li>
-                                <!-- Logout removed from dropdown -->
+                                <!-- ✅ Profile Link -->
+                                <li>
+                                    <a class="dropdown-item" href="@Url.Action("ViewProfile", "Resident")">
+                                        <i class="fas fa-user-circle"></i> My Profile
+                                    </a>
+                                </li>
+                                
                             }
                             else
                             {
@@ -326,9 +331,9 @@
         </div>
     </nav>
 
-    <!-- ===== MAIN CONTENT - THIS IS WHERE PAGE CONTENT GOES ===== -->
+    <!-- ===== MAIN CONTENT ===== -->
     <div class="container my-4">
-        @RenderBody()  <!-- ✅ THIS MUST BE HERE -->
+        @RenderBody()
     </div>
 
     <!-- ===== FOOTER ===== -->
