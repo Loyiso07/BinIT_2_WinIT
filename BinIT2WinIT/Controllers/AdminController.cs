@@ -320,6 +320,7 @@ namespace BinIT2WinIT.Controllers
             var residentCounts = new Dictionary<int, int>();
             var submissionCounts = new Dictionary<int, int>();
             var pointsCounts = new Dictionary<int, int>();
+            var communityStatuses = new Dictionary<int, CommunityStatus>();
 
             foreach (var community in communities)
             {
@@ -336,16 +337,27 @@ namespace BinIT2WinIT.Controllers
                 pointsCounts[community.DropOffPointId] = await _context.RecyclingSubmissions
                     .Where(s => s.DropOffPointId == community.DropOffPointId && s.Status == "Confirmed")
                     .SumAsync(s => (int?)s.Weight) ?? 0;
+
+                // ✅ Get latest community status
+                var latestStatus = await _context.CommunityStatuses
+                    .Where(c => c.DropOffPointId == community.DropOffPointId)
+                    .OrderByDescending(c => c.UpdatedDate)
+                    .FirstOrDefaultAsync();
+
+                if (latestStatus != null)
+                {
+                    communityStatuses[community.DropOffPointId] = latestStatus;
+                }
             }
 
             ViewBag.OfficerCounts = officerCounts;
             ViewBag.ResidentCounts = residentCounts;
             ViewBag.SubmissionCounts = submissionCounts;
             ViewBag.PointsCounts = pointsCounts;
+            ViewBag.CommunityStatuses = communityStatuses;
 
             return View(communities);
         }
-
         // ============================================================
         // GET: Admin/OfficerDeployment
         // ============================================================
@@ -427,12 +439,19 @@ namespace BinIT2WinIT.Controllers
                 .Where(s => s.DropOffPointId == id && s.Status == "Confirmed")
                 .ToListAsync();
 
+            // ✅ Get latest community status
+            var latestStatus = await _context.CommunityStatuses
+                .Where(c => c.DropOffPointId == id)
+                .OrderByDescending(c => c.UpdatedDate)
+                .FirstOrDefaultAsync();
+
             ViewBag.Officers = officers;
             ViewBag.Submissions = submissions;
             ViewBag.TotalWeight = submissions.Sum(s => s.Weight);
             ViewBag.TotalCO2 = submissions.Sum(s => s.Weight * 1.0);
             ViewBag.OfficerCount = officers.Count;
             ViewBag.SubmissionCount = submissions.Count;
+            ViewBag.LatestStatus = latestStatus;
 
             return View(community);
         }
@@ -766,6 +785,19 @@ namespace BinIT2WinIT.Controllers
                 _context.Dispose();
             }
             base.Dispose(disposing);
+        }
+
+        // ============================================================
+        // GET: Admin/CommunityStatuses
+        // ============================================================
+        public async Task<ActionResult> CommunityStatuses()
+        {
+            var statuses = await _context.CommunityStatuses
+                .Include(c => c.DropOffPoint)
+                .OrderByDescending(c => c.UpdatedDate)
+                .ToListAsync();
+
+            return View(statuses);
         }
     }
 }

@@ -260,6 +260,14 @@
     <Compile Include="Migrations\202607252036226_AddAdminAudit1.Designer.cs">
       <DependentUpon>202607252036226_AddAdminAudit1.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202607252152517_CommunityStatus.cs" />
+    <Compile Include="Migrations\202607252152517_CommunityStatus.Designer.cs">
+      <DependentUpon>202607252152517_CommunityStatus.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202607260812544_AddCommunityToResident.cs" />
+    <Compile Include="Migrations\202607260812544_AddCommunityToResident.Designer.cs">
+      <DependentUpon>202607260812544_AddCommunityToResident.cs</DependentUpon>
+    </Compile>
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Data\ApplicationDbContext.cs" />
@@ -283,6 +291,7 @@
     <Compile Include="Models\CO2Factor.cs" />
     <Compile Include="Models\CollectionEvent.cs" />
     <Compile Include="Models\CollectionOfficer.cs" />
+    <Compile Include="Models\CommunityStatus.cs" />
     <Compile Include="Models\DropOffPoint.cs" />
     <Compile Include="Models\MaterialType.cs" />
     <Compile Include="Models\PointsRate.cs" />
@@ -385,6 +394,9 @@
     <Content Include="Views\Admin\ManageAdmins.cshtml" />
     <Content Include="Views\Admin\AddAdmin.cshtml" />
     <Content Include="Views\Admin\AdminAudit.cshtml" />
+    <Content Include="Views\Officer\CommunityStatus.cshtml" />
+    <Content Include="Views\Admin\CommunityStatuses.cshtml" />
+    <Content Include="Views\Admin\CommunityDetails.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
@@ -437,6 +449,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202607252036226_AddAdminAudit1.resx">
       <DependentUpon>202607252036226_AddAdminAudit1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202607252152517_CommunityStatus.resx">
+      <DependentUpon>202607252152517_CommunityStatus.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202607260812544_AddCommunityToResident.resx">
+      <DependentUpon>202607260812544_AddCommunityToResident.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

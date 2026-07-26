@@ -24,6 +24,8 @@ namespace BinIT2WinIT.Data
         public DbSet<SystemConfiguration> SystemConfigurations { get; set; }
         public DbSet<ReferralTransaction> ReferralTransactions { get; set; }
 
+        public DbSet<CommunityStatus> CommunityStatuses { get; set; }
+
         //  Admin Creation Audit
         public DbSet<AdminCreationAudit> AdminCreationAudits { get; set; }
 

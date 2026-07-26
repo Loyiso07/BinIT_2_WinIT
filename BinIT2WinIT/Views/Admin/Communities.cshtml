@@ -1,4 +1,5 @@
-﻿@model IEnumerable<BinIT2WinIT.Models.DropOffPoint>
+﻿@using BinIT2WinIT.Models
+@model IEnumerable<BinIT2WinIT.Models.DropOffPoint>
 
 @{
     ViewBag.Title = "Communities";
@@ -34,6 +35,14 @@
                         <tbody>
                             @foreach (var community in Model)
                             {
+                                // ✅ FIXED: Now CommunityStatus is recognized
+                                var statuses = (Dictionary<int, CommunityStatus>)ViewBag.CommunityStatuses;
+                                CommunityStatus latestStatus = null;
+                                if (statuses != null)
+                                {
+                                    statuses.TryGetValue(community.DropOffPointId, out latestStatus);
+                                }
+
                                 <tr>
                                     <td><strong>@community.Name</strong></td>
                                     <td>@community.City</td>
@@ -50,13 +59,15 @@
                                         <span class="badge bg-warning">@ViewBag.PointsCounts[community.DropOffPointId]</span>
                                     </td>
                                     <td>
-                                        @if (community.IsActive)
+                                        @if (latestStatus != null)
                                         {
-                                            <span class="badge bg-success">Active</span>
+                                            <span class="badge @(latestStatus.Status == "Active" ? "bg-success" : latestStatus.Status == "NeedsAttention" ? "bg-warning" : latestStatus.Status == "Critical" ? "bg-danger" : "bg-secondary")">
+                                                @latestStatus.Status
+                                            </span>
                                         }
                                         else
                                         {
-                                            <span class="badge bg-danger">Inactive</span>
+                                            <span class="badge bg-secondary">No Status</span>
                                         }
                                     </td>
                                     <td>
@@ -84,4 +95,3 @@
         @Html.ActionLink("← Back to Dashboard", "Dashboard", "Admin", null, new { @class = "btn btn-outline-secondary" })
     </div>
 </div>
-

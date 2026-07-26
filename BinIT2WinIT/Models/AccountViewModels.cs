@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+// ✅ REMOVE: using System.Web.Mvc;
 
 namespace BinIT2WinIT.Models
 {
@@ -25,28 +26,50 @@ namespace BinIT2WinIT.Models
         public string FullName { get; set; }
 
         [Required]
-        [Display(Name = "Phone Number")]
-        [Phone]
-        public string PhoneNumber { get; set; }
-
-        [Required]
         [EmailAddress]
         [Display(Name = "Email")]
         public string Email { get; set; }
 
+        [Display(Name = "Phone Number")]
+        public string PhoneNumber { get; set; }
+
         [Required]
-        [StringLength(100, ErrorMessage = "The {0} must be at least {2} characters long.", MinimumLength = 6)]
+        [StringLength(100, ErrorMessage = "The {0} must be at least {2} characters long.", MinimumLength = 8)]
         [DataType(DataType.Password)]
         [Display(Name = "Password")]
         public string Password { get; set; }
 
         [DataType(DataType.Password)]
         [Display(Name = "Confirm password")]
-        [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
+        // ✅ USE FULLY QUALIFIED NAME
+        [System.ComponentModel.DataAnnotations.Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
         public string ConfirmPassword { get; set; }
 
-        [Display(Name = "Referral Code (Optional)")]
+        [Display(Name = "Role")]
+        public string RoleName { get; set; }
+
+        [Display(Name = "Referral Code")]
         public string ReferralCode { get; set; }
+
+        // Address Fields
+        [Display(Name = "Street Address")]
+        public string Address { get; set; }
+
+        [Display(Name = "Suburb")]
+        public string Suburb { get; set; }
+
+        [Display(Name = "City")]
+        public string City { get; set; }
+
+        [Display(Name = "Province")]
+        public string Province { get; set; }
+
+        [Display(Name = "Postal Code")]
+        public string PostalCode { get; set; }
+
+        // Community Selection
+        [Display(Name = "Your Community")]
+        public int? DropOffPointId { get; set; }
     }
 
     public class ForgotPasswordViewModel
@@ -65,14 +88,15 @@ namespace BinIT2WinIT.Models
         public string Email { get; set; }
 
         [Required]
-        [StringLength(100, ErrorMessage = "The {0} must be at least {2} characters long.", MinimumLength = 6)]
+        [StringLength(100, ErrorMessage = "The {0} must be at least {2} characters long.", MinimumLength = 8)]
         [DataType(DataType.Password)]
         [Display(Name = "Password")]
         public string Password { get; set; }
 
         [DataType(DataType.Password)]
         [Display(Name = "Confirm password")]
-        [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
+        // ✅ USE FULLY QUALIFIED NAME
+        [System.ComponentModel.DataAnnotations.Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
         public string ConfirmPassword { get; set; }
 
         public string Code { get; set; }

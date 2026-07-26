@@ -138,16 +138,36 @@ namespace BinIT2WinIT.Controllers
         }
 
         // ============================================================
-        // GET: /Account/Register
+        // ✅ UPDATED: GET: /Account/Register (Load communities)
         // ============================================================
         [AllowAnonymous]
         public ActionResult Register()
         {
+            // ✅ LOAD COMMUNITIES FROM DATABASE
+            var communities = _context.DropOffPoints
+                .Where(d => d.IsActive)
+                .OrderBy(d => d.Name)
+                .Select(d => new SelectListItem
+                {
+                    Value = d.DropOffPointId.ToString(),
+                    Text = d.Name
+                })
+                .ToList();
+
+            // Add "Select Community" option
+            communities.Insert(0, new SelectListItem
+            {
+                Value = "",
+                Text = "-- Select Your Community --"
+            });
+
+            ViewBag.Communities = new SelectList(communities, "Value", "Text");
+
             return View();
         }
 
         // ============================================================
-        // POST: /Account/Register
+        // ✅ UPDATED: POST: /Account/Register (Save community)
         // ============================================================
         [HttpPost]
         [AllowAnonymous]
@@ -189,7 +209,7 @@ namespace BinIT2WinIT.Controllers
                         // Add user to Resident role
                         await UserManager.AddToRoleAsync(user.Id, "Resident");
 
-                        // Create Resident profile
+                        // ✅ CREATE RESIDENT PROFILE WITH COMMUNITY
                         var resident = new Resident
                         {
                             UserId = user.Id,
@@ -201,7 +221,17 @@ namespace BinIT2WinIT.Controllers
                             TotalReferrals = 0,
                             ReferralCode = GenerateReferralCode(),
                             IsActive = true,
-                            CreatedAt = DateTime.Now
+                            CreatedAt = DateTime.Now,
+
+                            // ✅ SAVE ADDRESS FIELDS
+                            Address = model.Address,
+                            Suburb = model.Suburb,
+                            City = model.City,
+                            Province = model.Province,
+                            PostalCode = model.PostalCode,
+
+                            // ✅ SAVE COMMUNITY (Drop-Off Point)
+                            DropOffPointId = model.DropOffPointId
                         };
 
                         _context.Residents.Add(resident);
@@ -258,11 +288,30 @@ namespace BinIT2WinIT.Controllers
                 }
             }
 
+            // ✅ RELOAD COMMUNITIES IF REGISTRATION FAILS
+            var communities = _context.DropOffPoints
+                .Where(d => d.IsActive)
+                .OrderBy(d => d.Name)
+                .Select(d => new SelectListItem
+                {
+                    Value = d.DropOffPointId.ToString(),
+                    Text = d.Name
+                })
+                .ToList();
+
+            communities.Insert(0, new SelectListItem
+            {
+                Value = "",
+                Text = "-- Select Your Community --"
+            });
+
+            ViewBag.Communities = new SelectList(communities, "Value", "Text");
+
             return View(model);
         }
 
         // ============================================================
-        // ✅ FIX: GET /Account/Logout (For direct link clicks)
+        // GET: /Account/Logout (For direct link clicks)
         // ============================================================
         [HttpGet]
         public ActionResult Logout()

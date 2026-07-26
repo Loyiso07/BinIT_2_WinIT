@@ -172,6 +172,10 @@ namespace BinIT2WinIT.Controllers
         // ============================================================
         // GET: Resident/Leaderboard
         // ============================================================
+        // ============================================================
+        // GET: Resident/Leaderboard
+        // ============================================================
+        [Authorize(Roles = "Resident, CollectionOfficer")]
         public async Task<ActionResult> Leaderboard()
         {
             var topResidents = await _context.Residents
@@ -183,21 +187,11 @@ namespace BinIT2WinIT.Controllers
             var currentResident = await _context.Residents
                 .FirstOrDefaultAsync(r => r.UserId == userId);
 
-            int rank = 0;
-            if (currentResident != null)
-            {
-                rank = await _context.Residents
-                    .Where(r => r.PointsBalance > currentResident.PointsBalance)
-                    .CountAsync() + 1;
-            }
-
             ViewBag.CurrentUserId = userId;
             ViewBag.CurrentResident = currentResident;
-            ViewBag.CurrentRank = rank;
 
             return View(topResidents);
         }
-
         // ============================================================
         // GET: Resident/InfluencerPoints
         // ============================================================
@@ -277,5 +271,6 @@ namespace BinIT2WinIT.Controllers
             }
             base.Dispose(disposing);
         }
+
     }
 }
