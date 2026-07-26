@@ -860,5 +860,74 @@ namespace BinIT2WinIT.Controllers
             TempData["SuccessMessage"] = "✅ Announcement deleted successfully!";
             return RedirectToAction("Announcements");
         }
+
+        // ============================================================
+        // GET: Admin/EditOfficer
+        // ============================================================
+        public async Task<ActionResult> EditOfficer(int id)
+        {
+            var officer = await _context.CollectionOfficers
+                .Include(o => o.User)
+                .Include(o => o.AssignedDropOffPoint)
+                .FirstOrDefaultAsync(o => o.OfficerId == id);
+
+            if (officer == null)
+            {
+                TempData["ErrorMessage"] = "Officer not found.";
+                return RedirectToAction("Officers");
+            }
+
+            // Load drop-off points for dropdown
+            ViewBag.DropOffPoints = new SelectList(
+                await _context.DropOffPoints.Where(d => d.IsActive).ToListAsync(),
+                "DropOffPointId",
+                "Name",
+                officer.DropOffPointId
+            );
+
+            return View(officer);
+        }
+
+        // ============================================================
+        // POST: Admin/EditOfficer
+        // ============================================================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> EditOfficer(CollectionOfficer model)
+        {
+            if (ModelState.IsValid)
+            {
+                var officer = await _context.CollectionOfficers
+                    .FindAsync(model.OfficerId);
+
+                if (officer == null)
+                {
+                    TempData["ErrorMessage"] = "Officer not found.";
+                    return RedirectToAction("Officers");
+                }
+
+                // Update fields
+                officer.FullName = model.FullName;
+                officer.PhoneNumber = model.PhoneNumber;
+                officer.Department = model.Department;
+                officer.DropOffPointId = model.DropOffPointId;
+                officer.IsActive = model.IsActive;
+
+                await _context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = "✅ Officer updated successfully!";
+                return RedirectToAction("Officers");
+            }
+
+            // Reload drop-off points if validation fails
+            ViewBag.DropOffPoints = new SelectList(
+                await _context.DropOffPoints.Where(d => d.IsActive).ToListAsync(),
+                "DropOffPointId",
+                "Name",
+                model.DropOffPointId
+            );
+
+            return View(model);
+        }
     }
 }

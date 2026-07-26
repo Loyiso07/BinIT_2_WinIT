@@ -406,6 +406,7 @@
     <Content Include="Views\Admin\CreateAnnouncement.cshtml" />
     <Content Include="Views\Resident\ViewProfile.cshtml" />
     <Content Include="Views\Resident\EditProfile.cshtml" />
+    <Content Include="Views\Admin\EditOfficer.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
