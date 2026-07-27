@@ -230,7 +230,7 @@
             <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                 <ul class="navbar-nav flex-grow-1">
                     <li class="nav-item">
-                        @Html.ActionLink("Home", "Index", "Home", null, new { @class = "nav-link active" })
+                        @Html.ActionLink("Home", "Index", "Home", null, new { @class = "nav-link" })
                     </li>
                     <li class="nav-item">
                         @Html.ActionLink("About", "About", "Home", null, new { @class = "nav-link" })
@@ -239,45 +239,64 @@
                         @Html.ActionLink("Contact", "Contact", "Home", null, new { @class = "nav-link" })
                     </li>
 
-                    @if (User.Identity.IsAuthenticated)
+                    <!-- ✅ RESIDENT NAVIGATION -->
+                    @if (User.Identity.IsAuthenticated && User.IsInRole("Resident"))
                     {
-                        if (User.IsInRole("Resident"))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link" href="@Url.Action("Dashboard", "Resident")">
-                                    <i class="fas fa-home"></i> Dashboard
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="@Url.Action("SubmitRecycling", "Resident")">
-                                    <i class="fas fa-recycle"></i> Recycle
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="@Url.Action("Leaderboard", "Resident")">
-                                    <i class="fas fa-trophy"></i> Leaderboard
-                                </a>
-                            </li>
-                        }
-                        else if (User.IsInRole("CollectionOfficer"))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link" href="@Url.Action("Dashboard", "Officer")">
-                                    <i class="fas fa-clipboard-check"></i> Officer Dashboard
-                                </a>
-                            </li>
-                        }
-                        else if (User.IsInRole("Administrator"))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-warning" href="@Url.Action("Dashboard", "Admin")">
-                                    <i class="fas fa-cog"></i> Admin Panel
-                                </a>
-                            </li>
-                        }
+                        <li class="nav-item">
+                            <a class="nav-link" href="@Url.Action("Dashboard", "Resident")">
+                                <i class="fas fa-home"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="@Url.Action("SubmitRecycling", "Resident")">
+                                <i class="fas fa-recycle"></i> Recycle
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="@Url.Action("Leaderboard", "Resident")">
+                                <i class="fas fa-trophy"></i> Leaderboard
+                            </a>
+                        </li>
                     }
 
-                    <!-- ✅ ACCOUNT DROPDOWN - Only One! -->
+                    <!-- ✅ COLLECTION OFFICER NAVIGATION -->
+                    @if (User.Identity.IsAuthenticated && User.IsInRole("CollectionOfficer"))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" href="@Url.Action("Dashboard", "Officer")">
+                                <i class="fas fa-clipboard-check"></i> Officer Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="@Url.Action("Pending", "Officer")">
+                                <i class="fas fa-clock"></i> Pending
+                            </a>
+                        </li>
+                        <!-- ✅ NEW: IoT Bins for Officer -->
+                        <li class="nav-item">
+                            <a class="nav-link text-info" href="@Url.Action("OfficerBins", "IoT")">
+                                <i class="fas fa-trash-alt"></i> My Bins
+                            </a>
+                        </li>
+                    }
+
+                    <!-- ✅ ADMINISTRATOR NAVIGATION -->
+                    @if (User.Identity.IsAuthenticated && User.IsInRole("Administrator"))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link text-warning" href="@Url.Action("Dashboard", "Admin")">
+                                <i class="fas fa-cog"></i> Admin Panel
+                            </a>
+                        </li>
+                        <!-- ✅ NEW: IoT Dashboard for Admin -->
+                        <li class="nav-item">
+                            <a class="nav-link text-primary" href="@Url.Action("Dashboard", "IoT")">
+                                <i class="fas fa-wifi"></i> IoT Bins
+                            </a>
+                        </li>
+                    }
+
+                    <!-- ✅ ACCOUNT DROPDOWN -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-user"></i> Account
@@ -285,13 +304,18 @@
                         <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                             @if (User.Identity.IsAuthenticated)
                             {
-                                <!-- ✅ Profile Link -->
+                                <!-- Profile Link -->
                                 <li>
                                     <a class="dropdown-item" href="@Url.Action("ViewProfile", "Resident")">
                                         <i class="fas fa-user-circle"></i> My Profile
                                     </a>
                                 </li>
-                                
+                                <li><hr class="dropdown-divider" /></li>
+                                <li>
+                                    <a class="dropdown-item text-danger" href="@Url.Action("Logout", "Account")">
+                                        <i class="fas fa-sign-out-alt"></i> Logout
+                                    </a>
+                                </li>
                             }
                             else
                             {

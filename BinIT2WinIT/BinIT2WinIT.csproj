@@ -238,6 +238,7 @@
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\AdminController.cs" />
+    <Compile Include="Controllers\IoTController.cs" />
     <Compile Include="Controllers\OfficerController.cs" />
     <Compile Include="Controllers\ResidentController.cs" />
     <Compile Include="Migrations\202607221617059_UpdateDatabase.cs" />
@@ -272,6 +273,14 @@
     <Compile Include="Migrations\202607261246181_AddAnnouncements.Designer.cs">
       <DependentUpon>202607261246181_AddAnnouncements.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202607262220158_AddIoTModels.cs" />
+    <Compile Include="Migrations\202607262220158_AddIoTModels.Designer.cs">
+      <DependentUpon>202607262220158_AddIoTModels.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202607271202502_AddAssignedOfficerToAlert.cs" />
+    <Compile Include="Migrations\202607271202502_AddAssignedOfficerToAlert.Designer.cs">
+      <DependentUpon>202607271202502_AddAssignedOfficerToAlert.cs</DependentUpon>
+    </Compile>
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Data\ApplicationDbContext.cs" />
@@ -293,6 +302,7 @@
     <Compile Include="Models\AdminViewModels.cs" />
     <Compile Include="Models\Announcement.cs" />
     <Compile Include="Models\ApplicationUser.cs" />
+    <Compile Include="Models\BinAlert.cs" />
     <Compile Include="Models\CO2Factor.cs" />
     <Compile Include="Models\CollectionEvent.cs" />
     <Compile Include="Models\CollectionOfficer.cs" />
@@ -305,8 +315,11 @@
     <Compile Include="Models\ReferralTransaction.cs" />
     <Compile Include="Models\Resident.cs" />
     <Compile Include="Models\ResidentViewModels.cs" />
+    <Compile Include="Models\SmartBin.cs" />
     <Compile Include="Models\SystemConfiguration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\IIoTSimulationService.cs" />
+    <Compile Include="Services\IoTSimulationService.cs" />
     <Compile Include="Services\IPointsService.cs" />
     <Compile Include="Services\IReferralService.cs" />
     <Compile Include="Services\IReportService.cs" />
@@ -406,6 +419,10 @@
     <Content Include="Views\Admin\CreateAnnouncement.cshtml" />
     <Content Include="Views\Resident\ViewProfile.cshtml" />
     <Content Include="Views\Resident\EditProfile.cshtml" />
+    <Content Include="Views\IoT\Dashboard.cshtml" />
+    <Content Include="Views\IoT\OfficerBins.cshtml" />
+    <Content Include="Views\IoT\RegisterBin.cshtml" />
+    <Content Include="Views\IoT\ManageAlerts.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
@@ -467,6 +484,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202607261246181_AddAnnouncements.resx">
       <DependentUpon>202607261246181_AddAnnouncements.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202607262220158_AddIoTModels.resx">
+      <DependentUpon>202607262220158_AddIoTModels.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202607271202502_AddAssignedOfficerToAlert.resx">
+      <DependentUpon>202607271202502_AddAssignedOfficerToAlert.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

@@ -23,6 +23,8 @@ namespace BinIT2WinIT.Data
         public DbSet<CollectionEvent> CollectionEvents { get; set; }
         public DbSet<SystemConfiguration> SystemConfigurations { get; set; }
         public DbSet<ReferralTransaction> ReferralTransactions { get; set; }
+        public DbSet<SmartBin> SmartBins { get; set; }
+        public DbSet<BinAlert> BinAlerts { get; set; }
 
         public DbSet<CommunityStatus> CommunityStatuses { get; set; }
 
@@ -65,7 +67,16 @@ namespace BinIT2WinIT.Data
                 .WithMany()
                 .HasForeignKey(a => a.CreatedByUserId)
                 .WillCascadeOnDelete(false);
+            
+            // Configure SmartBin relationships
+            modelBuilder.Entity<SmartBin>()
+                .HasRequired(b => b.DropOffPoint)
+                .WithMany()
+                .HasForeignKey(b => b.DropOffPointId)
+                .WillCascadeOnDelete(false);
         }
+
+
 
         public static ApplicationDbContext Create()
         {
