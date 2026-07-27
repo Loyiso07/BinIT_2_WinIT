@@ -7,6 +7,7 @@
 
 <div class="container mt-4">
     <h2><i class="fas fa-wifi text-primary"></i> IoT Smart Bin Dashboard</h2>
+    <hr />
 
     @if (TempData["SuccessMessage"] != null)
     {
@@ -82,7 +83,7 @@
         <div class="alert alert-danger">
             <h5><i class="fas fa-exclamation-triangle"></i> Active Alerts</h5>
             <ul>
-                @foreach (var alert in ViewBag.Alerts)
+                @foreach (var alert in (List<BinIT2WinIT.Models.BinAlert>)ViewBag.Alerts)
                 {
                     <li>
                         @alert.Message
@@ -106,74 +107,101 @@
         </div>
     }
 
-    <!-- Bin Cards (Admin View - No Empty Bin Button) -->
+    <!-- Bin Cards -->
     <div class="row mt-4">
-        @foreach (var bin in Model)
+        @if (Model != null && Model.Any())
         {
-            var statusColor = bin.Status == "Online" ? "success" :
-                             bin.Status == "Full" ? "danger" : "warning";
+            foreach (var bin in Model)
+            {
+                // ✅ Determine status color based on fill level
+                var statusColor = bin.FillLevel >= 90 ? "danger" :
+                                 bin.FillLevel >= 70 ? "warning" : "success";
 
-            <div class="col-md-4 col-lg-3 mb-3">
-                <div class="card shadow-sm">
-                    <div class="card-header bg-@statusColor text-white">
-                        <i class="fas fa-trash-alt"></i> @bin.BinName
-                        <span class="badge bg-light text-dark float-end">@bin.Status</span>
-                    </div>
-                    <div class="card-body">
-                        <p class="text-muted">@bin.Location</p>
-                        <div class="progress" style="height:25px;">
-                            <div class="progress-bar bg-@statusColor"
-                                 role="progressbar"
-                                 style="width: @bin.FillLevel%">
-                                @bin.FillLevel%
-                            </div>
-                        </div>
-                        <div class="row mt-2 text-center small">
-                            <div class="col-6">
-                                <i class="fas fa-weight-hanging"></i> @bin.CurrentWeight.ToString("0.0") kg
-                            </div>
-                            <div class="col-6">
-                                <i class="fas fa-battery-@(bin.BatteryLevel > 50 ? "full text-success" : "quarter text-warning")"></i>
-                                @bin.BatteryLevel%
-                            </div>
-                        </div>
-                        <div class="text-center mt-2">
-                            <small class="text-muted">Updated: @bin.LastUpdated.ToString("HH:mm")</small>
-                        </div>
+                // ✅ Determine if bin is full
+                var isFull = bin.FillLevel >= 90;
 
-                        <!-- ✅ Admin Actions -->
-                        @if (User.IsInRole("Administrator"))
-                        {
-                            <div class="mt-2">
-                                @if (bin.FillLevel >= 90)
-                                {
-                                    using (Html.BeginForm("SendAlert", "IoT", FormMethod.Post, new { style = "display:inline;" }))
+                <div class="col-md-4 col-lg-3 mb-3">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-@statusColor text-white">
+                            <i class="fas fa-trash-alt"></i>
+                            <!-- ✅ FIXED: Use BinName instead of Name -->
+                            <strong>@bin.BinName</strong>
+                            <span class="badge bg-light text-dark float-end">
+                                @(bin.IsActive ? "Online" : "Offline")
+                            </span>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted"><i class="fas fa-map-pin"></i> @bin.Location</p>
+                            <div class="progress" style="height:25px;">
+                                <div class="progress-bar bg-@statusColor progress-bar-striped @(isFull ? "progress-bar-animated" : "")"
+                                     role="progressbar"
+                                     style="width: @bin.FillLevel%">
+                                    @bin.FillLevel%
+                                </div>
+                            </div>
+                            <div class="row mt-2 text-center small">
+                                <div class="col-6">
+                                    <i class="fas fa-weight-hanging"></i> @bin.CurrentWeight.ToString("0.0") kg
+                                </div>
+                                <div class="col-6">
+                                    <i class="fas fa-battery-@(bin.BatteryLevel > 50 ? "full text-success" : bin.BatteryLevel > 20 ? "quarter text-warning" : "empty text-danger")"></i>
+                                    @bin.BatteryLevel%
+                                </div>
+                            </div>
+                            <div class="text-center mt-2">
+                                <small class="text-muted">
+                                    <i class="fas fa-clock"></i> Updated: @bin.LastUpdated.ToString("HH:mm")
+                                </small>
+                            </div>
+
+                            <!-- Admin Actions -->
+                            @if (User.IsInRole("Administrator"))
+                            {
+                                <div class="mt-2">
+                                    @if (isFull)
                                     {
-                                        @Html.AntiForgeryToken()
-                                        <input type="hidden" name="binId" value="@bin.BinId" />
-                                        <input type="hidden" name="message" value="Bin is full. Please collect immediately." />
-                                        <button type="submit" class="btn btn-sm btn-outline-danger w-100">
-                                            <i class="fas fa-bell"></i> Send Alert
+                                        using (Html.BeginForm("SendAlert", "IoT", FormMethod.Post, new { style = "display:inline;" }))
+                                        {
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="binId" value="@bin.BinId" />
+                                            <input type="hidden" name="message" value="Bin is full. Please collect immediately." />
+                                            <button type="submit" class="btn btn-sm btn-outline-danger w-100">
+                                                <i class="fas fa-bell"></i> Send Alert
+                                            </button>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <button class="btn btn-sm btn-outline-secondary w-100" disabled>
+                                            <i class="fas fa-check-circle"></i> Bin Available
                                         </button>
                                     }
-                                }
-                            </div>
-                        }
+                                </div>
+                            }
+                        </div>
                     </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> No smart bins registered yet.
                 </div>
             </div>
         }
     </div>
 
-    @if (!Model.Any())
-    {
-        <div class="alert alert-info">
-            <i class="fas fa-info-circle"></i> No smart bins registered yet.
-        </div>
-    }
-
     <div class="mt-3">
-        @Html.ActionLink("← Back to Dashboard", "Dashboard", "Admin", null, new { @class = "btn btn-secondary" })
+        @if (User.IsInRole("Administrator"))
+        {
+            @Html.ActionLink("← Back to Dashboard", "Dashboard", "Admin", null, new { @class = "btn btn-secondary" })
+        }
+        else
+        {
+            @Html.ActionLink("← Back to Dashboard", "Dashboard", "Officer", null, new { @class = "btn btn-secondary" })
+        }
     </div>
 </div>
 
@@ -182,9 +210,13 @@
         $.post('@Url.Action("SimulateData", "IoT")')
             .done(function() {
                 location.reload();
+            })
+            .fail(function() {
+                alert('Failed to simulate data. Please try again.');
             });
     }
 
+    // Auto-refresh every 30 seconds
     setInterval(function() {
         location.reload();
     }, 30000);

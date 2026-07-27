@@ -1,4 +1,4 @@
-﻿@model List<BinIT2WinIT.Models.BinAlert>
+﻿@model IEnumerable<BinIT2WinIT.Models.BinAlert>
 
 @{
     ViewBag.Title = "Manage Alerts";
@@ -27,27 +27,35 @@
 
     <!-- Alert Stats -->
     <div class="row mt-3">
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card bg-danger text-white shadow">
                 <div class="card-body text-center">
-                    <h3>@Model.Count(a => a.AlertType == "Full")</h3>
+                    <h3>@(Model?.Count(a => a.AlertType == "Full" && !a.IsResolved) ?? 0)</h3>
                     <p>Full Bin Alerts</p>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card bg-warning text-dark shadow">
                 <div class="card-body text-center">
-                    <h3>@Model.Count(a => a.AlertType == "Maintenance")</h3>
+                    <h3>@(Model?.Count(a => a.AlertType == "Maintenance" && !a.IsResolved) ?? 0)</h3>
                     <p>Maintenance Alerts</p>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card bg-info text-white shadow">
                 <div class="card-body text-center">
-                    <h3>@Model.Count(a => a.AlertType == "Urgent")</h3>
+                    <h3>@(Model?.Count(a => a.AlertType == "Urgent" && !a.IsResolved) ?? 0)</h3>
                     <p>Urgent Alerts</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white shadow">
+                <div class="card-body text-center">
+                    <h3>@(Model?.Count(a => a.IsResolved) ?? 0)</h3>
+                    <p>Resolved</p>
                 </div>
             </div>
         </div>
@@ -66,15 +74,27 @@
                             <th>Type</th>
                             <th>Message</th>
                             <th>Assigned To</th>
+                            <th>Status</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var alert in Model)
+                        @foreach (var alert in Model.OrderByDescending(a => a.CreatedAt))
                         {
-                            <tr>
+                            <tr class="@(alert.IsResolved ? "table-secondary" : "table-danger")">
                                 <td>@alert.CreatedAt.ToString("dd MMM yyyy HH:mm")</td>
-                                <td>@alert.SmartBin?.BinName ?? "Unknown"</td>
+                                <td>
+                                    @if (alert.SmartBin != null)
+                                    {
+                                        <strong>@alert.SmartBin.BinName</strong>
+                                        <br />
+                                        <small class="text-muted">@alert.SmartBin.Location</small>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Unknown Bin</span>
+                                    }
+                                </td>
                                 <td>
                                     <span class="badge @(alert.AlertType == "Full" ? "bg-warning" : alert.AlertType == "Maintenance" ? "bg-danger" : "bg-danger")">
                                         @alert.AlertType
@@ -92,31 +112,30 @@
                                     }
                                 </td>
                                 <td>
-                                    @using (Html.BeginForm("ResolveAlert", "IoT", FormMethod.Post, new { style = "display:inline;" }))
+                                    @if (alert.IsResolved)
                                     {
-                                        @Html.AntiForgeryToken()
-                                        <input type="hidden" name="alertId" value="@alert.AlertId" />
-                                        <button type="submit" class="btn btn-sm btn-success">
-                                            <i class="fas fa-check"></i> Resolve
-                                        </button>
+                                        <span class="badge bg-success">Resolved</span>
                                     }
-
-                                    <!-- Assign Officer Dropdown -->
-                                    @using (Html.BeginForm("AssignTempOfficer", "IoT", FormMethod.Post, new { style = "display:inline;", @class = "ms-1" }))
+                                    else
                                     {
-                                        @Html.AntiForgeryToken()
-                                        <input type="hidden" name="binId" value="@alert.BinId" />
-                                        <select name="tempOfficerId" class="form-select form-select-sm d-inline" style="width:120px;">
-                                            <option value="">-- Assign --</option>
-                                            @foreach (var officer in ViewBag.Officers as SelectList ?? new SelectList(new List<BinIT2WinIT.Models.CollectionOfficer>(), "OfficerId", "FullName"))
-                                            {
-                                                <option value="@officer.Value">@officer.Text</option>
-                                            }
-                                        </select>
-                                        <input type="text" name="reason" placeholder="Reason" class="form-control form-control-sm d-inline" style="width:100px;" />
-                                        <button type="submit" class="btn btn-sm btn-primary">
-                                            <i class="fas fa-user-plus"></i> Assign
-                                        </button>
+                                        <span class="badge bg-danger">Active</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (!alert.IsResolved)
+                                    {
+                                        using (Html.BeginForm("ResolveAlert", "IoT", FormMethod.Post, new { style = "display:inline;" }))
+                                        {
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="alertId" value="@alert.AlertId" />
+                                            <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Resolve this alert?')">
+                                                <i class="fas fa-check"></i> Resolve
+                                            </button>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Resolved</span>
                                     }
                                 </td>
                             </tr>

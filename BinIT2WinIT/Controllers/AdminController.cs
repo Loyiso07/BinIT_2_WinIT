@@ -251,13 +251,60 @@ namespace BinIT2WinIT.Controllers
         }
 
         // ============================================================
-        // GET: Admin/Users
+        // GET: Admin/Users (with search and filter)
         // ============================================================
-        public async Task<ActionResult> Users()
+        public async Task<ActionResult> Users(string searchTerm = null, string roleFilter = "All")
         {
             var users = await _context.Users
                 .OrderBy(u => u.Email)
                 .ToListAsync();
+
+            var userManager = HttpContext.GetOwinContext().GetUserManager<ApplicationUserManager>();
+            var userRoles = new Dictionary<string, string>();
+            var userRoleList = new Dictionary<string, List<string>>();
+
+            foreach (var user in users)
+            {
+                var roles = await userManager.GetRolesAsync(user.Id);
+                var roleString = roles.Count > 0 ? string.Join(", ", roles) : "No Role";
+                userRoles[user.Id] = roleString;
+                userRoleList[user.Id] = roles.ToList();
+            }
+
+            if (!string.IsNullOrEmpty(roleFilter) && roleFilter != "All")
+            {
+                var filteredUserIds = userRoleList
+                    .Where(kvp => kvp.Value.Contains(roleFilter))
+                    .Select(kvp => kvp.Key)
+                    .ToList();
+
+                users = users.Where(u => filteredUserIds.Contains(u.Id)).ToList();
+            }
+
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                searchTerm = searchTerm.ToLower();
+                users = users.Where(u =>
+                    u.Email.ToLower().Contains(searchTerm) ||
+                    (u.FullName != null && u.FullName.ToLower().Contains(searchTerm))
+                ).ToList();
+            }
+
+            ViewBag.TotalAdmins = userRoleList.Count(kvp => kvp.Value.Contains("Administrator"));
+            ViewBag.TotalOfficers = userRoleList.Count(kvp => kvp.Value.Contains("CollectionOfficer"));
+            ViewBag.TotalResidents = userRoleList.Count(kvp => kvp.Value.Contains("Resident"));
+            ViewBag.TotalUsers = users.Count;
+            ViewBag.UserRoles = userRoles;
+            ViewBag.SelectedRole = roleFilter ?? "All";
+            ViewBag.SearchTerm = searchTerm ?? "";
+
+            ViewBag.RoleCounts = new Dictionary<string, int>
+            {
+                { "All", users.Count },
+                { "Administrator", ViewBag.TotalAdmins },
+                { "CollectionOfficer", ViewBag.TotalOfficers },
+                { "Resident", ViewBag.TotalResidents }
+            };
 
             return View(users);
         }
@@ -305,6 +352,7 @@ namespace BinIT2WinIT.Controllers
             TempData["SuccessMessage"] = $"✅ User '{user.Email}' has been activated.";
             return RedirectToAction("Users");
         }
+
         // ============================================================
         // GET: Admin/Communities
         // ============================================================
@@ -326,7 +374,6 @@ namespace BinIT2WinIT.Controllers
                     .Where(o => o.DropOffPointId == community.DropOffPointId)
                     .CountAsync();
 
-                // ✅ Count residents linked to this community via DropOffPointId
                 residentCounts[community.DropOffPointId] = await _context.Residents
                     .Where(r => r.DropOffPointId == community.DropOffPointId && r.IsActive)
                     .CountAsync();
@@ -345,7 +392,6 @@ namespace BinIT2WinIT.Controllers
             ViewBag.SubmissionCounts = submissionCounts;
             ViewBag.PointsCounts = pointsCounts;
 
-            // ✅ Load community statuses as a List
             var statuses = await _context.CommunityStatuses
                 .OrderByDescending(c => c.UpdatedDate)
                 .ToListAsync();
@@ -354,6 +400,7 @@ namespace BinIT2WinIT.Controllers
 
             return View(communities);
         }
+
         // ============================================================
         // GET: Admin/OfficerDeployment
         // ============================================================
@@ -435,7 +482,6 @@ namespace BinIT2WinIT.Controllers
                 .Where(s => s.DropOffPointId == id && s.Status == "Confirmed")
                 .ToListAsync();
 
-            // ✅ Get latest community status
             var latestStatus = await _context.CommunityStatuses
                 .Where(c => c.DropOffPointId == id)
                 .OrderByDescending(c => c.UpdatedDate)
@@ -877,7 +923,6 @@ namespace BinIT2WinIT.Controllers
                 return RedirectToAction("Officers");
             }
 
-            // Load drop-off points for dropdown
             ViewBag.DropOffPoints = new SelectList(
                 await _context.DropOffPoints.Where(d => d.IsActive).ToListAsync(),
                 "DropOffPointId",
@@ -906,7 +951,6 @@ namespace BinIT2WinIT.Controllers
                     return RedirectToAction("Officers");
                 }
 
-                // Update fields
                 officer.FullName = model.FullName;
                 officer.PhoneNumber = model.PhoneNumber;
                 officer.Department = model.Department;
@@ -919,7 +963,6 @@ namespace BinIT2WinIT.Controllers
                 return RedirectToAction("Officers");
             }
 
-            // Reload drop-off points if validation fails
             ViewBag.DropOffPoints = new SelectList(
                 await _context.DropOffPoints.Where(d => d.IsActive).ToListAsync(),
                 "DropOffPointId",
@@ -928,6 +971,120 @@ namespace BinIT2WinIT.Controllers
             );
 
             return View(model);
+        }
+
+        // ============================================================
+        // GET: Admin/DeleteOfficer (Confirmation)
+        // ============================================================
+        public async Task<ActionResult> DeleteOfficer(int id)
+        {
+            var officer = await _context.CollectionOfficers
+                .Include(o => o.User)
+                .Include(o => o.AssignedDropOffPoint)
+                .FirstOrDefaultAsync(o => o.OfficerId == id);
+
+            if (officer == null)
+            {
+                TempData["ErrorMessage"] = "Officer not found.";
+                return RedirectToAction("Officers");
+            }
+
+            return View(officer);
+        }
+
+        // ============================================================
+        // POST: Admin/DeleteOfficerConfirmed (Perform deletion)
+        // ============================================================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> DeleteOfficerConfirmed(int id)
+        {
+            var officer = await _context.CollectionOfficers
+                .Include(o => o.User)
+                .FirstOrDefaultAsync(o => o.OfficerId == id);
+
+            if (officer == null)
+            {
+                TempData["ErrorMessage"] = "Officer not found.";
+                return RedirectToAction("Officers");
+            }
+
+            var userName = officer.FullName;
+            _context.CollectionOfficers.Remove(officer);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = $"✅ Officer '{userName}' has been deleted successfully!";
+            return RedirectToAction("Officers");
+        }
+
+        // ============================================================
+        // GET: Admin/DeleteResident (Confirmation)
+        // ============================================================
+        public async Task<ActionResult> DeleteResident(int id)
+        {
+            var resident = await _context.Residents
+                .Include(r => r.User)
+                .Include(r => r.Community)
+                .FirstOrDefaultAsync(r => r.ResidentId == id);
+
+            if (resident == null)
+            {
+                TempData["ErrorMessage"] = "Resident not found.";
+                return RedirectToAction("Residents");
+            }
+
+            return View(resident);
+        }
+
+        // ============================================================
+        // POST: Admin/DeleteResidentConfirmed (Perform deletion)
+        // ============================================================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> DeleteResidentConfirmed(int id)
+        {
+            var resident = await _context.Residents
+                .Include(r => r.Submissions)
+                .Include(r => r.PointsTransactions)
+                .FirstOrDefaultAsync(r => r.ResidentId == id);
+
+            if (resident == null)
+            {
+                TempData["ErrorMessage"] = "Resident not found.";
+                return RedirectToAction("Residents");
+            }
+
+            var userName = resident.FullName;
+
+            if (resident.Submissions != null && resident.Submissions.Any())
+            {
+                _context.RecyclingSubmissions.RemoveRange(resident.Submissions);
+            }
+
+            if (resident.PointsTransactions != null && resident.PointsTransactions.Any())
+            {
+                _context.PointsTransactions.RemoveRange(resident.PointsTransactions);
+            }
+
+            _context.Residents.Remove(resident);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = $"✅ Resident '{userName}' has been deleted successfully!";
+            return RedirectToAction("Residents");
+        }
+
+        // ============================================================
+        // GET: Admin/Residents
+        // ============================================================
+        public async Task<ActionResult> Residents()
+        {
+            var residents = await _context.Residents
+                .Include(r => r.User)
+                .Include(r => r.Community)
+                .OrderBy(r => r.FullName)
+                .ToListAsync();
+
+            return View(residents);
         }
     }
 }

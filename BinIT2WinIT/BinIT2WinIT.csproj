@@ -29,6 +29,7 @@
     </NuGetPackageImportStamp>
     <DockerLaunchAction>LaunchBrowser</DockerLaunchAction>
     <DockerLaunchUrl>http://{ServiceIPAddress}</DockerLaunchUrl>
+    <LangVersion>9.0</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -419,14 +420,11 @@
     <Content Include="Views\Admin\CreateAnnouncement.cshtml" />
     <Content Include="Views\Resident\ViewProfile.cshtml" />
     <Content Include="Views\Resident\EditProfile.cshtml" />
-<<<<<<< HEAD
+    <Content Include="Views\Admin\EditOfficer.cshtml" />
     <Content Include="Views\IoT\Dashboard.cshtml" />
     <Content Include="Views\IoT\OfficerBins.cshtml" />
     <Content Include="Views\IoT\RegisterBin.cshtml" />
     <Content Include="Views\IoT\ManageAlerts.cshtml" />
-=======
-    <Content Include="Views\Admin\EditOfficer.cshtml" />
->>>>>>> ea198e9ceb6af4485927b4585da5045fa881c1bc
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
@@ -542,10 +540,4 @@
   </Target>
   <Import Project="..\packages\Microsoft.VisualStudio.Azure.Containers.Tools.Targets.1.22.1\build\Microsoft.VisualStudio.Azure.Containers.Tools.Targets.targets" Condition="Exists('..\packages\Microsoft.VisualStudio.Azure.Containers.Tools.Targets.1.22.1\build\Microsoft.VisualStudio.Azure.Containers.Tools.Targets.targets')" />
   <Import Project="..\packages\EntityFramework.6.5.2\build\EntityFramework.targets" Condition="Exists('..\packages\EntityFramework.6.5.2\build\EntityFramework.targets')" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target> -->
 </Project>
