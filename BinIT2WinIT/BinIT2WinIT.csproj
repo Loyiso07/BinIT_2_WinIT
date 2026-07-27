@@ -419,10 +419,14 @@
     <Content Include="Views\Admin\CreateAnnouncement.cshtml" />
     <Content Include="Views\Resident\ViewProfile.cshtml" />
     <Content Include="Views\Resident\EditProfile.cshtml" />
+<<<<<<< HEAD
     <Content Include="Views\IoT\Dashboard.cshtml" />
     <Content Include="Views\IoT\OfficerBins.cshtml" />
     <Content Include="Views\IoT\RegisterBin.cshtml" />
     <Content Include="Views\IoT\ManageAlerts.cshtml" />
+=======
+    <Content Include="Views\Admin\EditOfficer.cshtml" />
+>>>>>>> ea198e9ceb6af4485927b4585da5045fa881c1bc
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
