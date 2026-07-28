@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.Mvc;
 using Microsoft.AspNet.Identity;
+using Microsoft.AspNet.Identity.Owin;
 using BinIT2WinIT.Data;
 using BinIT2WinIT.Models;
+using BinIT2WinIT.Services;
 
 namespace BinIT2WinIT.Controllers
 {
@@ -14,6 +17,15 @@ namespace BinIT2WinIT.Controllers
     public class OfficerController : Controller
     {
         private readonly ApplicationDbContext _context = new ApplicationDbContext();
+
+        // ✅ GET NOTIFICATION SERVICE - FIXED
+        private INotificationService NotificationService
+        {
+            get
+            {
+                return System.Web.HttpContext.Current.GetOwinContext().Get<NotificationService>();
+            }
+        }
 
         // ============================================================
         // GET: Officer/Dashboard
@@ -98,6 +110,16 @@ namespace BinIT2WinIT.Controllers
 
             ViewBag.PendingCount = pendingCount;
             ViewBag.VerifiedToday = verifiedToday;
+
+            // GET NOTIFICATIONS FOR OFFICER
+            var notifications = await _context.Notifications
+                .Where(n => n.UserId == userId && !n.IsRead)
+                .OrderByDescending(n => n.CreatedAt)
+                .Take(10)
+                .ToListAsync();
+
+            ViewBag.Notifications = notifications;
+            ViewBag.UnreadCount = notifications.Count;
 
             return View(officer);
         }
@@ -197,6 +219,17 @@ namespace BinIT2WinIT.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+
+                // SEND NOTIFICATION TO RESIDENT
+                if (resident != null)
+                {
+                    await NotificationService.NotifyPointsUpdate(
+                        resident.ResidentId,
+                        points,
+                        $"Your recycling submission of {submission.Weight}kg of {submission.MaterialType.Name} was verified!"
+                    );
+                }
+
                 TempData["SuccessMessage"] = $"✅ Submission confirmed! {resident?.FullName ?? "Resident"} awarded {points} points.";
             }
             catch (System.Data.Entity.Validation.DbEntityValidationException ex)
@@ -271,6 +304,18 @@ namespace BinIT2WinIT.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+
+                // SEND NOTIFICATION TO RESIDENT
+                var resident = await _context.Residents.FindAsync(submission.ResidentId);
+                if (resident != null)
+                {
+                    await NotificationService.NotifyPointsUpdate(
+                        resident.ResidentId,
+                        0,
+                        $"Your recycling submission was rejected. Reason: {reason ?? "No reason provided"}"
+                    );
+                }
+
                 TempData["SuccessMessage"] = "❌ Submission rejected successfully.";
             }
             catch (System.Data.Entity.Validation.DbEntityValidationException ex)
@@ -335,17 +380,15 @@ namespace BinIT2WinIT.Controllers
         }
 
         // ============================================================
-        // ✅ Leaderboard Method
+        // GET: Officer/Leaderboard
         // ============================================================
         public async Task<ActionResult> Leaderboard()
         {
-            // Get top 10 residents by points
             var topResidents = await _context.Residents
                 .OrderByDescending(r => r.PointsBalance)
                 .Take(10)
                 .ToListAsync();
 
-            // Get current officer info
             var userId = User.Identity.GetUserId();
             var officer = await _context.CollectionOfficers
                 .FirstOrDefaultAsync(o => o.UserId == userId);
@@ -374,11 +417,9 @@ namespace BinIT2WinIT.Controllers
             var community = officer.AssignedDropOffPoint;
             var communityId = community.DropOffPointId;
 
-            // ✅ PASS BOTH the object AND the formatted name
             ViewBag.Community = community;
             ViewBag.CommunityName = community?.Name ?? "Not Assigned";
 
-            // Get community data
             var submissions = await _context.RecyclingSubmissions
                 .Where(s => s.DropOffPointId == communityId && s.Status == "Confirmed")
                 .ToListAsync();

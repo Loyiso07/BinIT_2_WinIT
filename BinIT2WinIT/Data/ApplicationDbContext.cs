@@ -30,6 +30,8 @@ namespace BinIT2WinIT.Data
 
         public DbSet<Announcement> Announcements { get; set; }
 
+        public DbSet<Notification> Notifications { get; set; }
+
         //  Admin Creation Audit
         public DbSet<AdminCreationAudit> AdminCreationAudits { get; set; }
 

@@ -114,6 +114,19 @@
                 transform: scale(1.1);
             }
 
+        /* Notification Bell */
+        .notification-bell {
+            position: relative;
+            display: inline-block;
+        }
+
+            .notification-bell .badge {
+                position: absolute;
+                top: -5px;
+                right: -5px;
+                font-size: 0.6rem;
+            }
+
         /* ===== FOOTER ===== */
         .footer-custom {
             background: #1A1A2E;
@@ -257,6 +270,15 @@
                                 <i class="fas fa-trophy"></i> Leaderboard
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link notification-bell" href="@Url.Action("Notifications", "Resident")">
+                                <i class="fas fa-bell"></i>
+                                @if (ViewBag.UnreadCount > 0)
+                                {
+                                    <span class="badge bg-danger">@ViewBag.UnreadCount</span>
+                                }
+                            </a>
+                        </li>
                     }
 
                     <!-- ✅ COLLECTION OFFICER NAVIGATION -->
@@ -272,7 +294,6 @@
                                 <i class="fas fa-clock"></i> Pending
                             </a>
                         </li>
-                        <!-- ✅ NEW: IoT Bins for Officer -->
                         <li class="nav-item">
                             <a class="nav-link text-info" href="@Url.Action("OfficerBins", "IoT")">
                                 <i class="fas fa-trash-alt"></i> My Bins
@@ -288,7 +309,6 @@
                                 <i class="fas fa-cog"></i> Admin Panel
                             </a>
                         </li>
-                        <!-- ✅ NEW: IoT Dashboard for Admin -->
                         <li class="nav-item">
                             <a class="nav-link text-primary" href="@Url.Action("Dashboard", "IoT")">
                                 <i class="fas fa-wifi"></i> IoT Bins
@@ -304,7 +324,6 @@
                         <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                             @if (User.Identity.IsAuthenticated)
                             {
-                                <!-- Profile Link -->
                                 <li>
                                     <a class="dropdown-item" href="@Url.Action("ViewProfile", "Resident")">
                                         <i class="fas fa-user-circle"></i> My Profile

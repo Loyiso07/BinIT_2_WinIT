@@ -100,5 +100,7 @@ namespace BinIT2WinIT.App_Start
         {
             return new ApplicationSignInManager(context.GetUserManager<ApplicationUserManager>(), context.Authentication);
         }
+
     }
+
 }

@@ -6,6 +6,22 @@
 }
 
 <div class="container mt-4">
+    <!-- Success/Error Messages -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            <i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">
+            <i class="fas fa-exclamation-circle"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
     <div class="row">
         <div class="col-12">
             <h2><i class="fas fa-home text-success"></i> Welcome, @Model.FullName!</h2>
@@ -24,55 +40,6 @@
                 </div>
             </div>
         </div>
-        <!-- Announcements / Rewards Section -->
-        <div class="row mt-4">
-            <div class="col-12">
-                <div class="card shadow">
-                    <div class="card-header bg-warning text-dark">
-                        <i class="fas fa-bullhorn"></i> Announcements & Rewards
-                    </div>
-                    <div class="card-body">
-                        @if (ViewBag.Announcements != null && ((List<BinIT2WinIT.Models.Announcement>)ViewBag.Announcements).Any())
-                        {
-                            foreach (var announcement in (List<BinIT2WinIT.Models.Announcement>)ViewBag.Announcements)
-                            {
-                                <div class="alert @(announcement.RewardType == "Voucher" ? "alert-success" : announcement.RewardType == "CommunityReward" ? "alert-info" : "alert-secondary")">
-                                    <h5><i class="fas fa-star"></i> @announcement.Title</h5>
-                                    <p>@announcement.Message</p>
-                                    @if (announcement.MinPointsRequired.HasValue)
-                                    {
-                                        <p>
-                                            <strong>Required Points:</strong> @announcement.MinPointsRequired pts
-                                            @if (Model.PointsBalance >= announcement.MinPointsRequired.Value)
-                                            {
-                                                <span class="badge bg-success"><i class="fas fa-check"></i> You qualify!</span>
-                                            }
-                                            else
-                                            {
-                                                <span class="badge bg-secondary">@(announcement.MinPointsRequired.Value - Model.PointsBalance) more points needed</span>
-                                            }
-                                        </p>
-                                    }
-                                    @if (!string.IsNullOrEmpty(announcement.VoucherCode))
-                                    {
-                                        <p><strong>Voucher Code:</strong> <code>@announcement.VoucherCode</code></p>
-                                    }
-                                    @if (!string.IsNullOrEmpty(announcement.CommunityReward))
-                                    {
-                                        <p class="text-success"><i class="fas fa-city"></i> <strong>Community Reward:</strong> 🎉 @announcement.CommunityReward</p>
-                                    }
-                                    <small class="text-muted">Posted: @announcement.CreatedAt.ToShortDateString()</small>
-                                </div>
-                            }
-                        }
-                        else
-                        {
-                            <p class="text-muted">No announcements at this time. Check back later for rewards and updates!</p>
-                        }
-                    </div>
-                </div>
-            </div>
-        </div>
         <div class="col-md-4">
             <div class="card bg-info text-white shadow">
                 <div class="card-body text-center">
@@ -88,6 +55,121 @@
                     <i class="fas fa-leaf fa-2x mb-2"></i>
                     <h3>@Model.TotalCO2Saved.ToString("0.0") kg</h3>
                     <p class="mb-0">CO2 Saved</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ✅ NOTIFICATIONS SECTION -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                    <div>
+                        <i class="fas fa-bell"></i> Notifications
+                        @if (ViewBag.UnreadCount > 0)
+                        {
+                            <span class="badge bg-danger ms-2">@ViewBag.UnreadCount unread</span>
+                        }
+                    </div>
+                    @if (ViewBag.UnreadCount > 0)
+                    {
+                        <button onclick="markAllRead()" class="btn btn-sm btn-light">
+                            <i class="fas fa-check-double"></i> Mark All Read
+                        </button>
+                    }
+                </div>
+                <div class="card-body">
+                    @if (ViewBag.Notifications != null && ((List<BinIT2WinIT.Models.Notification>)ViewBag.Notifications).Any())
+                    {
+                        foreach (var notif in (List<BinIT2WinIT.Models.Notification>)ViewBag.Notifications)
+                        {
+                            <div class="alert @(notif.IsRead ? "alert-secondary" : "alert-info")">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>@notif.Title</strong>
+                                        <p class="mb-0">@notif.Message</p>
+                                        <small class="text-muted">@notif.CreatedAt.ToString("dd MMM yyyy HH:mm")</small>
+                                    </div>
+                                    <div>
+                                        @if (!notif.IsRead)
+                                        {
+                                            <button onclick="markAsRead(@notif.NotificationId)" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-check"></i> Mark Read
+                                            </button>
+                                        }
+                                        @if (!string.IsNullOrEmpty(notif.Link))
+                                        {
+                                            <a href="@notif.Link" class="btn btn-sm btn-outline-info">
+                                                <i class="fas fa-arrow-right"></i> View
+                                            </a>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        <div class="text-center mt-2">
+                            <a href="@Url.Action("Notifications", "Resident")" class="btn btn-sm btn-outline-secondary">
+                                View All Notifications
+                            </a>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted text-center mb-0">
+                            <i class="fas fa-check-circle text-success"></i> No new notifications
+                        </p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Announcements / Rewards Section -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-warning text-dark">
+                    <i class="fas fa-bullhorn"></i> Announcements & Rewards
+                </div>
+                <div class="card-body">
+                    @if (ViewBag.Announcements != null && ((List<BinIT2WinIT.Models.Announcement>)ViewBag.Announcements).Any())
+                    {
+                        foreach (var announcement in (List<BinIT2WinIT.Models.Announcement>)ViewBag.Announcements)
+                        {
+                            <div class="alert @(announcement.RewardType == "Voucher" ? "alert-success" : announcement.RewardType == "CommunityReward" ? "alert-info" : "alert-secondary")">
+                                <h5><i class="fas fa-star"></i> @announcement.Title</h5>
+                                <p>@announcement.Message</p>
+                                @if (announcement.MinPointsRequired.HasValue)
+                                {
+                                    <p>
+                                        <strong>Required Points:</strong> @announcement.MinPointsRequired pts
+                                        @if (Model.PointsBalance >= announcement.MinPointsRequired.Value)
+                                        {
+                                            <span class="badge bg-success"><i class="fas fa-check"></i> You qualify!</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">@(announcement.MinPointsRequired.Value - Model.PointsBalance) more points needed</span>
+                                        }
+                                    </p>
+                                }
+                                @if (!string.IsNullOrEmpty(announcement.VoucherCode))
+                                {
+                                    <p><strong>Voucher Code:</strong> <code>@announcement.VoucherCode</code></p>
+                                }
+                                @if (!string.IsNullOrEmpty(announcement.CommunityReward))
+                                {
+                                    <p class="text-success"><i class="fas fa-city"></i> <strong>Community Reward:</strong> 🎉 @announcement.CommunityReward</p>
+                                }
+                                <small class="text-muted">Posted: @announcement.CreatedAt.ToShortDateString()</small>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p class="text-muted">No announcements at this time. Check back later for rewards and updates!</p>
+                    }
                 </div>
             </div>
         </div>
@@ -145,7 +227,7 @@
         </div>
     </div>
 
-    <!-- Recent Activity Section (Optional) -->
+    <!-- Recent Activity Section -->
     <div class="row mt-4">
         <div class="col-12">
             <div class="card shadow">
@@ -155,32 +237,33 @@
                 <div class="card-body">
                     @if (Model.Submissions != null && Model.Submissions.Any())
                     {
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Material</th>
-                                    <th>Weight (kg)</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var submission in Model.Submissions.OrderByDescending(s => s.SubmissionDate).Take(5))
-                                {
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
                                     <tr>
-                                        <td>@submission.SubmissionDate.ToShortDateString()</td>
-                                        <!-- ✅ FIXED: Use .Name property -->
-                                        <td>@(submission.MaterialType?.Name ?? "Unknown")</td>
-                                        <td>@submission.Weight.ToString("0.0")</td>
-                                        <td>
-                                            <span class="badge @(submission.Status == "Confirmed" ? "bg-success" : submission.Status == "Pending" ? "bg-warning" : "bg-danger")">
-                                                @submission.Status
-                                            </span>
-                                        </td>
+                                        <th>Date</th>
+                                        <th>Material</th>
+                                        <th>Weight (kg)</th>
+                                        <th>Status</th>
                                     </tr>
-                                }
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    @foreach (var submission in Model.Submissions.OrderByDescending(s => s.SubmissionDate).Take(5))
+                                    {
+                                        <tr>
+                                            <td>@submission.SubmissionDate.ToShortDateString()</td>
+                                            <td>@(submission.MaterialType?.Name ?? "Unknown")</td>
+                                            <td>@submission.Weight.ToString("0.0")</td>
+                                            <td>
+                                                <span class="badge @(submission.Status == "Confirmed" ? "bg-success" : submission.Status == "Pending" ? "bg-warning" : "bg-danger")">
+                                                    @submission.Status
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
                     }
                     else
                     {
@@ -191,3 +274,23 @@
         </div>
     </div>
 </div>
+
+<script>
+    function markAsRead(id) {
+        $.post('@Url.Action("MarkNotificationRead", "Resident")', { id: id })
+            .done(function (response) {
+                if (response.success) {
+                    location.reload();
+                }
+            });
+    }
+
+    function markAllRead() {
+        $.post('@Url.Action("MarkAllRead", "Resident")')
+            .done(function (response) {
+                if (response.success) {
+                    location.reload();
+                }
+            });
+    }
+</script>

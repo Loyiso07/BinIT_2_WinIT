@@ -9,6 +9,7 @@ using Microsoft.AspNet.Identity.Owin;
 using BinIT2WinIT.Data;
 using BinIT2WinIT.Models;
 using BinIT2WinIT.App_Start;
+using BinIT2WinIT.Services;  // ✅ ADD THIS
 using System.Web;
 
 namespace BinIT2WinIT.Controllers
@@ -17,6 +18,15 @@ namespace BinIT2WinIT.Controllers
     public class AdminController : Controller
     {
         private readonly ApplicationDbContext _context = new ApplicationDbContext();
+
+        // ✅ GET NOTIFICATION SERVICE
+        private INotificationService NotificationService
+        {
+            get
+            {
+                return HttpContext.GetOwinContext().Get<INotificationService>();
+            }
+        }
 
         // ============================================================
         // GET: Admin/Dashboard
@@ -510,9 +520,8 @@ namespace BinIT2WinIT.Controllers
 
             return View(officers);
         }
-
         // ============================================================
-        // GET: Admin/AssignOfficer
+        // GET: Admin/AssignOfficer (Shows the assignment form)
         // ============================================================
         public async Task<ActionResult> AssignOfficer(int id)
         {
@@ -543,15 +552,16 @@ namespace BinIT2WinIT.Controllers
         }
 
         // ============================================================
-        // POST: Admin/AssignOfficer
+        // POST: Admin/AssignOfficerPost (Processes the assignment)
         // ============================================================
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> AssignOfficer(AssignOfficerViewModel model)
+        public async Task<ActionResult> AssignOfficerPost(AssignOfficerViewModel model)
         {
             if (ModelState.IsValid)
             {
                 var officer = await _context.CollectionOfficers
+                    .Include(o => o.User)
                     .FirstOrDefaultAsync(o => o.OfficerId == model.OfficerId);
 
                 if (officer == null)
@@ -566,6 +576,92 @@ namespace BinIT2WinIT.Controllers
                 var pointName = model.DropOffPointId.HasValue
                     ? (await _context.DropOffPoints.FirstOrDefaultAsync(d => d.DropOffPointId == model.DropOffPointId.Value))?.Name
                     : "No Region Assigned";
+
+                // ✅ SEND NOTIFICATION
+                try
+                {
+                    var notificationService = System.Web.HttpContext.Current.GetOwinContext().Get<NotificationService>();
+                    if (notificationService != null && officer.UserId != null)
+                    {
+                        await notificationService.NotifyOfficerAssignment(officer.OfficerId, pointName);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Notification failed: {ex.Message}");
+                }
+
+                TempData["SuccessMessage"] = $"✅ Officer '{officer.FullName}' assigned to '{pointName}' successfully!";
+                return RedirectToAction("Officers");
+            }
+
+            model.DropOffPoints = new SelectList(
+                await _context.DropOffPoints.Where(d => d.IsActive).ToListAsync(),
+                "DropOffPointId",
+                "Name",
+                model.DropOffPointId
+            );
+
+            return View(model);
+        }
+
+        // ✅ Helper: Send notification safely
+        private async Task SendOfficerAssignmentNotification(int officerId, string regionName)
+        {
+            try
+            {
+                var notificationService = System.Web.HttpContext.Current.GetOwinContext().Get<NotificationService>();
+                if (notificationService != null)
+                {
+                    await notificationService.NotifyOfficerAssignment(officerId, regionName);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Notification failed: {ex.Message}");
+            }
+        }
+        // ============================================================
+        // POST: Admin/AssignOfficer (with notification)
+        // ============================================================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> AssignOfficer(AssignOfficerViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var officer = await _context.CollectionOfficers
+                    .Include(o => o.User)
+                    .FirstOrDefaultAsync(o => o.OfficerId == model.OfficerId);
+
+                if (officer == null)
+                {
+                    TempData["ErrorMessage"] = "Officer not found.";
+                    return RedirectToAction("Officers");
+                }
+
+                var oldRegion = officer.AssignedDropOffPoint?.Name ?? "None";
+                officer.DropOffPointId = model.DropOffPointId;
+                await _context.SaveChangesAsync();
+
+                var pointName = model.DropOffPointId.HasValue
+                    ? (await _context.DropOffPoints.FirstOrDefaultAsync(d => d.DropOffPointId == model.DropOffPointId.Value))?.Name
+                    : "No Region Assigned";
+
+                // ✅ SEND NOTIFICATION TO OFFICER (with proper error handling)
+                try
+                {
+                    var notificationService = System.Web.HttpContext.Current.GetOwinContext().Get<NotificationService>();
+                    if (notificationService != null && officer.UserId != null)
+                    {
+                        await notificationService.NotifyOfficerAssignment(officer.OfficerId, pointName);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Log error but don't break the flow
+                    System.Diagnostics.Debug.WriteLine($"Notification failed: {ex.Message}");
+                }
 
                 TempData["SuccessMessage"] = $"✅ Officer '{officer.FullName}' assigned to '{pointName}' successfully!";
                 return RedirectToAction("Officers");

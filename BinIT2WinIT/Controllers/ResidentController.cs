@@ -1,10 +1,13 @@
 ﻿using BinIT2WinIT.Data;
 using BinIT2WinIT.Models;
+using BinIT2WinIT.Services;  // ✅ ADD THIS
 using Microsoft.AspNet.Identity;
+using Microsoft.AspNet.Identity.Owin;  // ✅ ADD THIS
 using System;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.Mvc;
 
 namespace BinIT2WinIT.Controllers
@@ -13,6 +16,15 @@ namespace BinIT2WinIT.Controllers
     public class ResidentController : Controller
     {
         private readonly ApplicationDbContext _context = new ApplicationDbContext();
+
+        // ✅ GET NOTIFICATION SERVICE
+        private INotificationService NotificationService
+        {
+            get
+            {
+                return HttpContext.GetOwinContext().Get<INotificationService>();
+            }
+        }
 
         // ============================================================
         // GET: Resident/Dashboard
@@ -63,6 +75,16 @@ namespace BinIT2WinIT.Controllers
                 .ToListAsync();
 
             ViewBag.Announcements = announcements;
+
+            // ✅ LOAD NOTIFICATIONS FOR RESIDENT
+            var notifications = await _context.Notifications
+                .Where(n => n.UserId == userId && !n.IsRead)
+                .OrderByDescending(n => n.CreatedAt)
+                .Take(10)
+                .ToListAsync();
+
+            ViewBag.Notifications = notifications;
+            ViewBag.UnreadCount = notifications.Count;
 
             return View(resident);
         }
@@ -247,7 +269,7 @@ namespace BinIT2WinIT.Controllers
         }
 
         // ============================================================
-        // ✅ UPDATED: GET: Resident/EditProfile (with community dropdown)
+        // GET: Resident/EditProfile
         // ============================================================
         public async Task<ActionResult> EditProfile()
         {
@@ -267,7 +289,6 @@ namespace BinIT2WinIT.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            // ✅ Load communities for dropdown
             ViewBag.Communities = new SelectList(
                 _context.DropOffPoints.Where(d => d.IsActive).ToList(),
                 "DropOffPointId",
@@ -279,7 +300,7 @@ namespace BinIT2WinIT.Controllers
         }
 
         // ============================================================
-        // ✅ UPDATED: POST: Resident/EditProfile (with community save)
+        // POST: Resident/EditProfile
         // ============================================================
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -296,7 +317,6 @@ namespace BinIT2WinIT.Controllers
                     return RedirectToAction("Login", "Account");
                 }
 
-                // ✅ Update all fields including community
                 resident.FullName = model.FullName;
                 resident.PhoneNumber = model.PhoneNumber;
                 resident.Address = model.Address;
@@ -304,7 +324,7 @@ namespace BinIT2WinIT.Controllers
                 resident.City = model.City;
                 resident.Province = model.Province;
                 resident.PostalCode = model.PostalCode;
-                resident.DropOffPointId = model.DropOffPointId;  // ✅ Save community
+                resident.DropOffPointId = model.DropOffPointId;
 
                 await _context.SaveChangesAsync();
 
@@ -312,7 +332,6 @@ namespace BinIT2WinIT.Controllers
                 return RedirectToAction("ViewProfile");
             }
 
-            // ✅ Reload communities if validation fails
             ViewBag.Communities = new SelectList(
                 _context.DropOffPoints.Where(d => d.IsActive).ToList(),
                 "DropOffPointId",
@@ -321,6 +340,64 @@ namespace BinIT2WinIT.Controllers
             );
 
             return View(model);
+        }
+
+        // ============================================================
+        // POST: Resident/MarkNotificationRead
+        // ============================================================
+        [HttpPost]
+        public async Task<ActionResult> MarkNotificationRead(int id)
+        {
+            var notification = await _context.Notifications.FindAsync(id);
+            if (notification != null)
+            {
+                notification.IsRead = true;
+                notification.ReadAt = DateTime.Now;
+                await _context.SaveChangesAsync();
+                return Json(new { success = true });
+            }
+            return Json(new { success = false });
+        }
+
+        // ============================================================
+        // POST: Resident/MarkAllRead
+        // ============================================================
+        [HttpPost]
+        public async Task<ActionResult> MarkAllRead()
+        {
+            var userId = User.Identity.GetUserId();
+            var notifications = await _context.Notifications
+                .Where(n => n.UserId == userId && !n.IsRead)
+                .ToListAsync();
+
+            foreach (var n in notifications)
+            {
+                n.IsRead = true;
+                n.ReadAt = DateTime.Now;
+            }
+
+            await _context.SaveChangesAsync();
+            return Json(new { success = true });
+        }
+
+        // ============================================================
+        // GET: Resident/Notifications
+        // ============================================================
+        public async Task<ActionResult> Notifications()
+        {
+            var userId = User.Identity.GetUserId();
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var notifications = await _context.Notifications
+                .Where(n => n.UserId == userId)
+                .OrderByDescending(n => n.CreatedAt)
+                .ToListAsync();
+
+            return View(notifications);
         }
 
         // ============================================================

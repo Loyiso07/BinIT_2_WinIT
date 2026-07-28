@@ -41,7 +41,8 @@ namespace BinIT2WinIT.Controllers
         {
             get
             {
-                return _signInManager ?? HttpContext.GetOwinContext().Get<ApplicationSignInManager>();
+                // ✅ FIXED: Use System.Web.HttpContext.Current
+                return _signInManager ?? System.Web.HttpContext.Current.GetOwinContext().Get<ApplicationSignInManager>();
             }
             private set
             {
@@ -53,7 +54,8 @@ namespace BinIT2WinIT.Controllers
         {
             get
             {
-                return _userManager ?? HttpContext.GetOwinContext().GetUserManager<ApplicationUserManager>();
+                // ✅ FIXED: Use System.Web.HttpContext.Current
+                return _userManager ?? System.Web.HttpContext.Current.GetOwinContext().GetUserManager<ApplicationUserManager>();
             }
             private set
             {
@@ -65,7 +67,8 @@ namespace BinIT2WinIT.Controllers
         {
             get
             {
-                return _roleManager ?? HttpContext.GetOwinContext().Get<ApplicationRoleManager>();
+                // ✅ FIXED: Use System.Web.HttpContext.Current
+                return _roleManager ?? System.Web.HttpContext.Current.GetOwinContext().Get<ApplicationRoleManager>();
             }
             private set
             {
@@ -75,7 +78,8 @@ namespace BinIT2WinIT.Controllers
 
         private IAuthenticationManager AuthenticationManager
         {
-            get { return HttpContext.GetOwinContext().Authentication; }
+            // ✅ FIXED: Use System.Web.HttpContext.Current
+            get { return System.Web.HttpContext.Current.GetOwinContext().Authentication; }
         }
 
         // ============================================================
@@ -138,12 +142,11 @@ namespace BinIT2WinIT.Controllers
         }
 
         // ============================================================
-        // ✅ UPDATED: GET: /Account/Register (Load communities)
+        // GET: /Account/Register
         // ============================================================
         [AllowAnonymous]
         public ActionResult Register()
         {
-            // ✅ LOAD COMMUNITIES FROM DATABASE
             var communities = _context.DropOffPoints
                 .Where(d => d.IsActive)
                 .OrderBy(d => d.Name)
@@ -154,7 +157,6 @@ namespace BinIT2WinIT.Controllers
                 })
                 .ToList();
 
-            // Add "Select Community" option
             communities.Insert(0, new SelectListItem
             {
                 Value = "",
@@ -167,7 +169,7 @@ namespace BinIT2WinIT.Controllers
         }
 
         // ============================================================
-        // ✅ UPDATED: POST: /Account/Register (Save community)
+        // POST: /Account/Register
         // ============================================================
         [HttpPost]
         [AllowAnonymous]
@@ -192,7 +194,6 @@ namespace BinIT2WinIT.Controllers
 
                     if (result.Succeeded)
                     {
-                        // ✅ ENSURE ROLES EXIST
                         if (!await RoleManager.RoleExistsAsync("Administrator"))
                         {
                             await RoleManager.CreateAsync(new IdentityRole("Administrator"));
@@ -206,10 +207,8 @@ namespace BinIT2WinIT.Controllers
                             await RoleManager.CreateAsync(new IdentityRole("Resident"));
                         }
 
-                        // Add user to Resident role
                         await UserManager.AddToRoleAsync(user.Id, "Resident");
 
-                        // ✅ CREATE RESIDENT PROFILE WITH COMMUNITY
                         var resident = new Resident
                         {
                             UserId = user.Id,
@@ -222,22 +221,17 @@ namespace BinIT2WinIT.Controllers
                             ReferralCode = GenerateReferralCode(),
                             IsActive = true,
                             CreatedAt = DateTime.Now,
-
-                            // ✅ SAVE ADDRESS FIELDS
                             Address = model.Address,
                             Suburb = model.Suburb,
                             City = model.City,
                             Province = model.Province,
                             PostalCode = model.PostalCode,
-
-                            // ✅ SAVE COMMUNITY (Drop-Off Point)
                             DropOffPointId = model.DropOffPointId
                         };
 
                         _context.Residents.Add(resident);
                         await _context.SaveChangesAsync();
 
-                        // ✅ PROCESS REFERRAL CODE
                         if (!string.IsNullOrEmpty(model.ReferralCode))
                         {
                             var referrer = _context.Residents
@@ -288,7 +282,6 @@ namespace BinIT2WinIT.Controllers
                 }
             }
 
-            // ✅ RELOAD COMMUNITIES IF REGISTRATION FAILS
             var communities = _context.DropOffPoints
                 .Where(d => d.IsActive)
                 .OrderBy(d => d.Name)
@@ -311,7 +304,7 @@ namespace BinIT2WinIT.Controllers
         }
 
         // ============================================================
-        // GET: /Account/Logout (For direct link clicks)
+        // GET: /Account/Logout
         // ============================================================
         [HttpGet]
         public ActionResult Logout()
@@ -321,7 +314,7 @@ namespace BinIT2WinIT.Controllers
         }
 
         // ============================================================
-        // POST: /Account/Logout (For forms - more secure)
+        // POST: /Account/Logout
         // ============================================================
         [HttpPost]
         [ValidateAntiForgeryToken]
