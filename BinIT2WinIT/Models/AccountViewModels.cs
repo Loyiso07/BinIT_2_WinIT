@@ -17,6 +17,9 @@ namespace BinIT2WinIT.Models
 
         [Display(Name = "Remember me?")]
         public bool RememberMe { get; set; }
+
+        // ✅ NEW: Expected Role for validation
+        public string ExpectedRole { get; set; }
     }
 
     public class RegisterViewModel
