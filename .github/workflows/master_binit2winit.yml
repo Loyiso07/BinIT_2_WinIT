@@ -1,7 +1,7 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy ASP app to Azure Web App - BinIT2WinIT
+name: Build and deploy ASP app to Azure Web App - BinIt2WinIt
 
 on:
   push:
@@ -52,15 +52,15 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_DE2BF4B7D89F441D8E42F9184EFA4123 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_694C741328194B65BED2AEDCC5C6F05F }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_9543A63DD2494986B0D21FE3C873E16F }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_84F71DE35D6045AFA9626471D38DD68A }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_DD687A82D7CB4A398034AE8A227A90B7 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_2E5C101E375A4A25A08A3975FFBD3506 }}
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'BinIT2WinIT'
+          app-name: 'BinIt2WinIt'
           slot-name: 'Production'
           package: .
           
