@@ -33,6 +33,7 @@
                 font-size: 1.5rem;
                 color: white !important;
                 letter-spacing: -0.5px;
+                cursor: pointer;
             }
 
                 .navbar-custom .navbar-brand i {
@@ -212,6 +213,16 @@
                 padding: 4px 10px;
             }
         }
+
+        /* ===== SECRET NOTIFICATION ANIMATION ===== */
+        @@keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @@keyframes fadeOutDown {
+            from { opacity: 1; transform: translateY(0) scale(1); }
+            to { opacity: 0; transform: translateY(20px) scale(0.95); }
+        }
     </style>
 </head>
 <body>
@@ -219,7 +230,7 @@
     <!-- ===== NAVIGATION ===== -->
     <nav class="navbar navbar-expand-lg navbar-custom">
         <div class="container">
-            <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
+            <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index" id="logoLink">
                 <i class="fas fa-recycle"></i> BinIT2WinIT
             </a>
 
@@ -229,9 +240,49 @@
 
             <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                 <ul class="navbar-nav flex-grow-1">
-                    <li class="nav-item">
-                        @Html.ActionLink("Home", "Index", "Home", null, new { @class = "nav-link" })
-                    </li>
+                    <!-- ✅ DYNAMIC HOME / DASHBOARD LINK -->
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        if (User.IsInRole("Resident"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" href="@Url.Action("Dashboard", "Resident")">
+                                    <i class="fas fa-home"></i> Dashboard
+                                </a>
+                            </li>
+                        }
+                        else if (User.IsInRole("CollectionOfficer"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" href="@Url.Action("Dashboard", "Officer")">
+                                    <i class="fas fa-home"></i> Dashboard
+                                </a>
+                            </li>
+                        }
+                        else if (User.IsInRole("Administrator"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" href="@Url.Action("Dashboard", "Admin")">
+                                    <i class="fas fa-home"></i> Dashboard
+                                </a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" href="@Url.Action("Index", "Home")">
+                                    <i class="fas fa-home"></i> Dashboard
+                                </a>
+                            </li>
+                        }
+                    }
+                    else
+                    {
+                        <li class="nav-item">
+                            @Html.ActionLink("Home", "Index", "Home", null, new { @class = "nav-link" })
+                        </li>
+                    }
+
                     <li class="nav-item">
                         @Html.ActionLink("About", "About", "Home", null, new { @class = "nav-link" })
                     </li>
@@ -239,14 +290,9 @@
                         @Html.ActionLink("Contact", "Contact", "Home", null, new { @class = "nav-link" })
                     </li>
 
-                    <!-- ✅ RESIDENT NAVIGATION -->
+                    <!-- RESIDENT NAVIGATION -->
                     @if (User.Identity.IsAuthenticated && User.IsInRole("Resident"))
                     {
-                        <li class="nav-item">
-                            <a class="nav-link" href="@Url.Action("Dashboard", "Resident")">
-                                <i class="fas fa-home"></i> Dashboard
-                            </a>
-                        </li>
                         <li class="nav-item">
                             <a class="nav-link" href="@Url.Action("SubmitRecycling", "Resident")">
                                 <i class="fas fa-recycle"></i> Recycle
@@ -259,20 +305,14 @@
                         </li>
                     }
 
-                    <!-- ✅ COLLECTION OFFICER NAVIGATION -->
+                    <!-- COLLECTION OFFICER NAVIGATION -->
                     @if (User.Identity.IsAuthenticated && User.IsInRole("CollectionOfficer"))
                     {
-                        <li class="nav-item">
-                            <a class="nav-link" href="@Url.Action("Dashboard", "Officer")">
-                                <i class="fas fa-clipboard-check"></i> Officer Dashboard
-                            </a>
-                        </li>
                         <li class="nav-item">
                             <a class="nav-link" href="@Url.Action("Pending", "Officer")">
                                 <i class="fas fa-clock"></i> Pending
                             </a>
                         </li>
-                        <!-- ✅ NEW: IoT Bins for Officer -->
                         <li class="nav-item">
                             <a class="nav-link text-info" href="@Url.Action("OfficerBins", "IoT")">
                                 <i class="fas fa-trash-alt"></i> My Bins
@@ -280,7 +320,7 @@
                         </li>
                     }
 
-                    <!-- ✅ ADMINISTRATOR NAVIGATION -->
+                    <!-- ADMINISTRATOR NAVIGATION -->
                     @if (User.Identity.IsAuthenticated && User.IsInRole("Administrator"))
                     {
                         <li class="nav-item">
@@ -288,7 +328,6 @@
                                 <i class="fas fa-cog"></i> Admin Panel
                             </a>
                         </li>
-                        <!-- ✅ NEW: IoT Dashboard for Admin -->
                         <li class="nav-item">
                             <a class="nav-link text-primary" href="@Url.Action("Dashboard", "IoT")">
                                 <i class="fas fa-wifi"></i> IoT Bins
@@ -296,7 +335,7 @@
                         </li>
                     }
 
-                    <!-- ✅ ACCOUNT DROPDOWN -->
+                    <!-- ACCOUNT DROPDOWN -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-user"></i> Account
@@ -304,12 +343,22 @@
                         <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                             @if (User.Identity.IsAuthenticated)
                             {
-                                <!-- Profile Link -->
-                                <li>
-                                    <a class="dropdown-item" href="@Url.Action("ViewProfile", "Resident")">
-                                        <i class="fas fa-user-circle"></i> My Profile
-                                    </a>
-                                </li>
+                                if (User.IsInRole("Administrator"))
+                                {
+                                    <li>
+                                        <a class="dropdown-item text-warning" href="@Url.Action("Dashboard", "Admin")">
+                                            <i class="fas fa-cog"></i> Admin Panel
+                                        </a>
+                                    </li>
+                                }
+                                if (User.IsInRole("Resident") || User.IsInRole("CollectionOfficer"))
+                                {
+                                    <li>
+                                        <a class="dropdown-item" href="@Url.Action("ViewProfile", "Resident")">
+                                            <i class="fas fa-user-circle"></i> My Profile
+                                        </a>
+                                    </li>
+                                }
                                 <li><hr class="dropdown-divider" /></li>
                                 <li>
                                     <a class="dropdown-item text-danger" href="@Url.Action("Logout", "Account")">
@@ -319,8 +368,28 @@
                             }
                             else
                             {
-                                <li>@Html.ActionLink("Login", "Login", "Account", null, new { @class = "dropdown-item" })</li>
-                                <li>@Html.ActionLink("Register", "Register", "Account", null, new { @class = "dropdown-item" })</li>
+                                <li>
+                                    <a class="dropdown-item" href="@Url.Action("UserLogin", "Account")">
+                                        <i class="fas fa-user text-success"></i> Resident Login
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="@Url.Action("OfficerLogin", "Account")">
+                                        <i class="fas fa-clipboard-check text-primary"></i> Officer Login
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider" /></li>
+                                <li>
+                                    <a class="dropdown-item text-danger" href="@Url.Action("AdminLogin", "Account")">
+                                        <i class="fas fa-lock"></i> Admin Login
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider" /></li>
+                                <li>
+                                    <a class="dropdown-item" href="@Url.Action("Register", "Account")">
+                                        <i class="fas fa-user-plus"></i> Register
+                                    </a>
+                                </li>
                             }
                         </ul>
                     </li>
@@ -343,9 +412,6 @@
                     }
                     else
                     {
-                        <a href="@Url.Action("Login", "Account")" class="btn-outline-light-custom me-2">
-                            <i class="fas fa-sign-in-alt"></i> Login
-                        </a>
                         <a href="@Url.Action("Register", "Account")" class="btn-outline-light-custom">
                             <i class="fas fa-user-plus"></i> Sign Up
                         </a>
@@ -398,6 +464,88 @@
     <script src="~/Scripts/bootstrap.bundle.min.js"></script>
     <script src="~/Scripts/dark-mode.js"></script>
     @RenderSection("Scripts", required: false)
+
+    <!-- ============================================================ -->
+    <!-- SECRET ADMIN LOGIN - EASTER EGG                               -->
+    <!-- ============================================================ -->
+    <script>
+        (function() {
+            'use strict';
+
+            // ============================================================
+            // OPTION 1: Keyboard Shortcut - Ctrl + Shift + A
+            // ============================================================
+            document.addEventListener('keydown', function(e) {
+                if (e.ctrlKey && e.shiftKey && (e.key === 'a' || e.key === 'A')) {
+                    e.preventDefault();
+                    window.location.href = '@Url.Action("AdminLogin", "Account")';
+                }
+            });
+
+            // ============================================================
+            // OPTION 2: Click Logo 5 Times
+            // ============================================================
+            var clickCounter = 0;
+            var clickTimer = null;
+
+            document.addEventListener('DOMContentLoaded', function() {
+                var logo = document.getElementById('logoLink');
+
+                if (logo) {
+                    logo.addEventListener('click', function(e) {
+                        clickCounter++;
+
+                        clearTimeout(clickTimer);
+                        clickTimer = setTimeout(function() {
+                            clickCounter = 0;
+                        }, 2000);
+
+                        if (clickCounter >= 5) {
+                            clickCounter = 0;
+                            showSecretNotification('🔐 Accessing Admin Portal...');
+                            setTimeout(function() {
+                                window.location.href = '@Url.Action("AdminLogin", "Account")';
+                            }, 500);
+                        }
+                    });
+                }
+            });
+
+            // ============================================================
+            // OPTION 3: Secret Notification (Visual Feedback)
+            // ============================================================
+            function showSecretNotification(message) {
+                var notification = document.createElement('div');
+                notification.innerHTML = message;
+                notification.style.cssText = `
+                    position: fixed;
+                    bottom: 30px;
+                    right: 30px;
+                    background: rgba(0,0,0,0.85);
+                    color: #4CAF50;
+                    padding: 14px 28px;
+                    border-radius: 10px;
+                    font-size: 14px;
+                    font-weight: 600;
+                    z-index: 9999;
+                    font-family: 'Inter', sans-serif;
+                    border-left: 4px solid #4CAF50;
+                    box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+                    animation: fadeInUp 0.3s ease;
+                    letter-spacing: 0.5px;
+                `;
+                document.body.appendChild(notification);
+
+                setTimeout(function() {
+                    notification.style.animation = 'fadeOutDown 0.3s ease';
+                    setTimeout(function() {
+                        document.body.removeChild(notification);
+                    }, 300);
+                }, 2000);
+            }
+
+        })();
+    </script>
 
 </body>
 </html>
