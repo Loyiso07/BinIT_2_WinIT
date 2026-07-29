@@ -25,21 +25,18 @@ namespace BinIT2WinIT.Data
         public DbSet<ReferralTransaction> ReferralTransactions { get; set; }
         public DbSet<SmartBin> SmartBins { get; set; }
         public DbSet<BinAlert> BinAlerts { get; set; }
-
         public DbSet<CommunityStatus> CommunityStatuses { get; set; }
-
         public DbSet<Announcement> Announcements { get; set; }
-
         public DbSet<Notification> Notifications { get; set; }
-
-        //  Admin Creation Audit
+        public DbSet<RedemptionOption> RedemptionOptions { get; set; }
+        public DbSet<RedemptionRequest> RedemptionRequests { get; set; }
         public DbSet<AdminCreationAudit> AdminCreationAudits { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            //  Specify column length for ReferralCode
+            // Specify column length for ReferralCode
             modelBuilder.Entity<Resident>()
                 .Property(r => r.ReferralCode)
                 .HasMaxLength(50);
@@ -57,7 +54,7 @@ namespace BinIT2WinIT.Data
                 .HasForeignKey(r => r.NewResidentId)
                 .WillCascadeOnDelete(false);
 
-            //  Configure AdminCreationAudit with NO CASCADE DELETE
+            // Configure AdminCreationAudit with NO CASCADE DELETE
             modelBuilder.Entity<AdminCreationAudit>()
                 .HasRequired(a => a.NewAdmin)
                 .WithMany()
@@ -69,16 +66,33 @@ namespace BinIT2WinIT.Data
                 .WithMany()
                 .HasForeignKey(a => a.CreatedByUserId)
                 .WillCascadeOnDelete(false);
-            
+
             // Configure SmartBin relationships
             modelBuilder.Entity<SmartBin>()
                 .HasRequired(b => b.DropOffPoint)
                 .WithMany()
                 .HasForeignKey(b => b.DropOffPointId)
                 .WillCascadeOnDelete(false);
+
+            // ============================================================
+            // ✅ FIX: Decimal Precision for Redemption Models
+            // ============================================================
+
+            // Configure decimal precision for RedemptionRequest
+            modelBuilder.Entity<RedemptionRequest>()
+                .Property(r => r.DiscountAmount)
+                .HasPrecision(10, 2);
+
+            // Configure decimal precision for RedemptionOption
+            modelBuilder.Entity<RedemptionOption>()
+                .Property(o => o.DiscountAmount)
+                .HasPrecision(10, 2);
+
+            // Optional: Configure other decimal properties if needed
+            // modelBuilder.Entity<PointsTransaction>()
+            //     .Property(t => t.Amount)
+            //     .HasPrecision(10, 2);
         }
-
-
 
         public static ApplicationDbContext Create()
         {

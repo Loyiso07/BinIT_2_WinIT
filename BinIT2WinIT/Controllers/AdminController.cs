@@ -9,7 +9,7 @@ using Microsoft.AspNet.Identity.Owin;
 using BinIT2WinIT.Data;
 using BinIT2WinIT.Models;
 using BinIT2WinIT.App_Start;
-using BinIT2WinIT.Services;  // ✅ ADD THIS
+using BinIT2WinIT.Services;
 using System.Web;
 
 namespace BinIT2WinIT.Controllers
@@ -19,7 +19,7 @@ namespace BinIT2WinIT.Controllers
     {
         private readonly ApplicationDbContext _context = new ApplicationDbContext();
 
-        // ✅ GET NOTIFICATION SERVICE
+        // GET NOTIFICATION SERVICE
         private INotificationService NotificationService
         {
             get
@@ -520,6 +520,7 @@ namespace BinIT2WinIT.Controllers
 
             return View(officers);
         }
+
         // ============================================================
         // GET: Admin/AssignOfficer (Shows the assignment form)
         // ============================================================
@@ -552,76 +553,6 @@ namespace BinIT2WinIT.Controllers
         }
 
         // ============================================================
-        // POST: Admin/AssignOfficerPost (Processes the assignment)
-        // ============================================================
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<ActionResult> AssignOfficerPost(AssignOfficerViewModel model)
-        {
-            if (ModelState.IsValid)
-            {
-                var officer = await _context.CollectionOfficers
-                    .Include(o => o.User)
-                    .FirstOrDefaultAsync(o => o.OfficerId == model.OfficerId);
-
-                if (officer == null)
-                {
-                    TempData["ErrorMessage"] = "Officer not found.";
-                    return RedirectToAction("Officers");
-                }
-
-                officer.DropOffPointId = model.DropOffPointId;
-                await _context.SaveChangesAsync();
-
-                var pointName = model.DropOffPointId.HasValue
-                    ? (await _context.DropOffPoints.FirstOrDefaultAsync(d => d.DropOffPointId == model.DropOffPointId.Value))?.Name
-                    : "No Region Assigned";
-
-                // ✅ SEND NOTIFICATION
-                try
-                {
-                    var notificationService = System.Web.HttpContext.Current.GetOwinContext().Get<NotificationService>();
-                    if (notificationService != null && officer.UserId != null)
-                    {
-                        await notificationService.NotifyOfficerAssignment(officer.OfficerId, pointName);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Notification failed: {ex.Message}");
-                }
-
-                TempData["SuccessMessage"] = $"✅ Officer '{officer.FullName}' assigned to '{pointName}' successfully!";
-                return RedirectToAction("Officers");
-            }
-
-            model.DropOffPoints = new SelectList(
-                await _context.DropOffPoints.Where(d => d.IsActive).ToListAsync(),
-                "DropOffPointId",
-                "Name",
-                model.DropOffPointId
-            );
-
-            return View(model);
-        }
-
-        // ✅ Helper: Send notification safely
-        private async Task SendOfficerAssignmentNotification(int officerId, string regionName)
-        {
-            try
-            {
-                var notificationService = System.Web.HttpContext.Current.GetOwinContext().Get<NotificationService>();
-                if (notificationService != null)
-                {
-                    await notificationService.NotifyOfficerAssignment(officerId, regionName);
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Notification failed: {ex.Message}");
-            }
-        }
-        // ============================================================
         // POST: Admin/AssignOfficer (with notification)
         // ============================================================
         [HttpPost]
@@ -648,7 +579,7 @@ namespace BinIT2WinIT.Controllers
                     ? (await _context.DropOffPoints.FirstOrDefaultAsync(d => d.DropOffPointId == model.DropOffPointId.Value))?.Name
                     : "No Region Assigned";
 
-                // ✅ SEND NOTIFICATION TO OFFICER (with proper error handling)
+                // SEND NOTIFICATION TO OFFICER
                 try
                 {
                     var notificationService = System.Web.HttpContext.Current.GetOwinContext().Get<NotificationService>();
@@ -659,7 +590,6 @@ namespace BinIT2WinIT.Controllers
                 }
                 catch (Exception ex)
                 {
-                    // Log error but don't break the flow
                     System.Diagnostics.Debug.WriteLine($"Notification failed: {ex.Message}");
                 }
 
@@ -1181,6 +1111,188 @@ namespace BinIT2WinIT.Controllers
                 .ToListAsync();
 
             return View(residents);
+        }
+
+        // ============================================================
+        // GET: Admin/ManageRedemptionOptions
+        // ============================================================
+        public async Task<ActionResult> ManageRedemptionOptions()
+        {
+            var options = await _context.RedemptionOptions
+                .OrderBy(o => o.UtilityType)
+                .ToListAsync();
+
+            return View(options);
+        }
+
+        // ============================================================
+        // GET: Admin/CreateRedemptionOption
+        // ============================================================
+        public ActionResult CreateRedemptionOption()
+        {
+            return View();
+        }
+
+        // ============================================================
+        // POST: Admin/CreateRedemptionOption
+        // ============================================================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> CreateRedemptionOption(RedemptionOption model)
+        {
+            if (ModelState.IsValid)
+            {
+                model.CreatedAt = DateTime.Now;
+                _context.RedemptionOptions.Add(model);
+                await _context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = "✅ Redemption option created successfully!";
+                return RedirectToAction("ManageRedemptionOptions");
+            }
+
+            return View(model);
+        }
+
+        // ============================================================
+        // POST: Admin/ToggleRedemptionOption
+        // ============================================================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> ToggleRedemptionOption(int id)
+        {
+            var option = await _context.RedemptionOptions.FindAsync(id);
+            if (option != null)
+            {
+                option.IsActive = !option.IsActive;
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = $"✅ Option {(option.IsActive ? "activated" : "deactivated")} successfully!";
+            }
+
+            return RedirectToAction("ManageRedemptionOptions");
+        }
+
+        // ============================================================
+        // GET: Admin/ManageRedemptionRequests
+        // ============================================================
+        public async Task<ActionResult> ManageRedemptionRequests()
+        {
+            var pendingRequests = await _context.RedemptionRequests
+                .Include(r => r.Resident)
+                .Include(r => r.RedemptionOption)
+                .Where(r => r.RequestStatus == "Pending")
+                .OrderBy(r => r.RequestDate)
+                .ToListAsync();
+
+            var approvedRequests = await _context.RedemptionRequests
+                .Include(r => r.Resident)
+                .Include(r => r.RedemptionOption)
+                .Where(r => r.RequestStatus == "Approved")
+                .OrderByDescending(r => r.ApprovedDate)
+                .ToListAsync();
+
+            ViewBag.ApprovedRequests = approvedRequests;
+
+            return View(pendingRequests);
+        }
+
+        // ============================================================
+        // ✅ FIXED: POST: Admin/ApproveRedemption (Using FirstOrDefaultAsync)
+        // ============================================================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> ApproveRedemption(int id, string notes)
+        {
+            // ✅ FIX: Use FirstOrDefaultAsync instead of FindAsync
+            var request = await _context.RedemptionRequests
+                .Include(r => r.Resident)
+                .Include(r => r.RedemptionOption)
+                .FirstOrDefaultAsync(r => r.RequestId == id);
+
+            if (request == null)
+            {
+                TempData["ErrorMessage"] = "Request not found.";
+                return RedirectToAction("ManageRedemptionRequests");
+            }
+
+            request.RequestStatus = "Approved";
+            request.ApprovedDate = DateTime.Now;
+            request.ApprovedBy = User.Identity.GetUserName();
+            request.AdminNotes = notes;
+
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = $"✅ Redemption approved! {request.Resident.FullName} will receive R{request.DiscountAmount} off their {request.UtilityType} bill.";
+            return RedirectToAction("ManageRedemptionRequests");
+        }
+
+        // ============================================================
+        // ✅ FIXED: POST: Admin/RejectRedemption (Using FirstOrDefaultAsync)
+        // ============================================================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> RejectRedemption(int id, string reason)
+        {
+            // ✅ FIX: Use FirstOrDefaultAsync instead of FindAsync
+            var request = await _context.RedemptionRequests
+                .Include(r => r.Resident)
+                .FirstOrDefaultAsync(r => r.RequestId == id);
+
+            if (request == null)
+            {
+                TempData["ErrorMessage"] = "Request not found.";
+                return RedirectToAction("ManageRedemptionRequests");
+            }
+
+            if (string.IsNullOrEmpty(reason))
+            {
+                TempData["ErrorMessage"] = "Please provide a reason for rejection.";
+                return RedirectToAction("ManageRedemptionRequests");
+            }
+
+            request.RequestStatus = "Rejected";
+            request.AdminNotes = reason;
+
+            // Refund points to resident
+            var resident = await _context.Residents
+                .FirstOrDefaultAsync(r => r.ResidentId == request.ResidentId);
+
+            if (resident != null)
+            {
+                resident.PointsBalance += request.PointsUsed;
+
+                // Create refund transaction
+                var transaction = new PointsTransaction
+                {
+                    ResidentId = request.ResidentId,
+                    Amount = request.PointsUsed,
+                    Description = $"Refund: Redemption rejected ({reason})",
+                    Type = "Refund",
+                    TransactionDate = DateTime.Now,
+                    ReferenceId = request.RequestId,
+                    Reason = reason
+                };
+                _context.PointsTransactions.Add(transaction);
+            }
+
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "❌ Redemption rejected. Points have been refunded to the resident.";
+            return RedirectToAction("ManageRedemptionRequests");
+        }
+
+        // ============================================================
+        // GET: Admin/ExportRedemptions
+        // ============================================================
+        public async Task<ActionResult> ExportRedemptions()
+        {
+            var requests = await _context.RedemptionRequests
+                .Include(r => r.Resident)
+                .Include(r => r.RedemptionOption)
+                .Where(r => r.RequestStatus == "Approved" || r.RequestStatus == "Applied")
+                .OrderByDescending(r => r.ApprovedDate)
+                .ToListAsync();
+
+            return View(requests);
         }
     }
 }

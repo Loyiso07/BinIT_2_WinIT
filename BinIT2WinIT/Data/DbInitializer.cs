@@ -339,6 +339,48 @@ namespace BinIT2WinIT.Data
                     context.SaveChanges();
                 }
             }
+
+            // ============================================================
+            // 12. ✅ FIXED: Seed Redemption Options
+            // ============================================================
+            if (!context.RedemptionOptions.Any())
+            {
+                // ✅ CORRECT: Use AddRange with array syntax
+                context.RedemptionOptions.AddRange(new RedemptionOption[]
+                {
+                    new RedemptionOption
+                    {
+                        UtilityType = "Water",
+                        Description = "R50 off your water bill",
+                        PointsRequired = 200,
+                        DiscountAmount = 50,
+                        IsActive = true,
+                        Icon = "fa-tint",
+                        CreatedAt = DateTime.Now
+                    },
+                    new RedemptionOption
+                    {
+                        UtilityType = "Electricity",
+                        Description = "R100 off your electricity bill",
+                        PointsRequired = 400,
+                        DiscountAmount = 100,
+                        IsActive = true,
+                        Icon = "fa-bolt",
+                        CreatedAt = DateTime.Now
+                    },
+                    new RedemptionOption
+                    {
+                        UtilityType = "Both",
+                        Description = "R200 off your combined utility bill",
+                        PointsRequired = 700,
+                        DiscountAmount = 200,
+                        IsActive = true,
+                        Icon = "fa-home",
+                        CreatedAt = DateTime.Now
+                    }
+                });
+                context.SaveChanges();
+            }
         }
     }
 }

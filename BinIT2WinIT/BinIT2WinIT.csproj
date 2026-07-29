@@ -221,6 +221,10 @@
     <Compile Include="Migrations\202607272016256_AddNotifications.Designer.cs">
       <DependentUpon>202607272016256_AddNotifications.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202607291242546_FixDecimalPrecision.cs" />
+    <Compile Include="Migrations\202607291242546_FixDecimalPrecision.Designer.cs">
+      <DependentUpon>202607291242546_FixDecimalPrecision.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\AdminCreationAudit.cs" />
@@ -239,6 +243,9 @@
     <Compile Include="Models\PointsRate.cs" />
     <Compile Include="Models\PointsTransaction.cs" />
     <Compile Include="Models\RecyclingSubmission.cs" />
+    <Compile Include="Models\RedemptionOption.cs" />
+    <Compile Include="Models\RedemptionRequest.cs" />
+    <Compile Include="Models\RedemptionViewModels.cs" />
     <Compile Include="Models\ReferralTransaction.cs" />
     <Compile Include="Models\Resident.cs" />
     <Compile Include="Models\ResidentViewModels.cs" />
@@ -357,6 +364,12 @@
     <Content Include="Views\Account\ResetPasswordConfirmation.cshtml" />
     <Content Include="Views\Account\ResetPassword.cshtml" />
     <Content Include="Views\Resident\Notifications.cshtml" />
+    <Content Include="Views\Resident\RedeemPoints.cshtml" />
+    <Content Include="Views\Resident\RedeemConfirmation.cshtml" />
+    <Content Include="Views\Resident\RedeemHistory.cshtml" />
+    <Content Include="Views\Admin\ManageRedemptionRequests.cshtml" />
+    <Content Include="Views\Admin\ManageRedemptionOptions.cshtml" />
+    <Content Include="Views\Admin\CreateRedemptionOption.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
@@ -427,6 +440,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202607272016256_AddNotifications.resx">
       <DependentUpon>202607272016256_AddNotifications.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202607291242546_FixDecimalPrecision.resx">
+      <DependentUpon>202607291242546_FixDecimalPrecision.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
