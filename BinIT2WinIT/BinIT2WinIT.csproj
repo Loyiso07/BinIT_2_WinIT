@@ -217,6 +217,10 @@
     <Compile Include="Migrations\202607271202502_AddAssignedOfficerToAlert.Designer.cs">
       <DependentUpon>202607271202502_AddAssignedOfficerToAlert.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202607272016256_AddNotifications.cs" />
+    <Compile Include="Migrations\202607272016256_AddNotifications.Designer.cs">
+      <DependentUpon>202607272016256_AddNotifications.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\AdminCreationAudit.cs" />
@@ -231,6 +235,7 @@
     <Compile Include="Models\CommunityStatus.cs" />
     <Compile Include="Models\DropOffPoint.cs" />
     <Compile Include="Models\MaterialType.cs" />
+    <Compile Include="Models\Notification.cs" />
     <Compile Include="Models\PointsRate.cs" />
     <Compile Include="Models\PointsTransaction.cs" />
     <Compile Include="Models\RecyclingSubmission.cs" />
@@ -241,10 +246,12 @@
     <Compile Include="Models\SystemConfiguration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\IIoTSimulationService.cs" />
+    <Compile Include="Services\INotificationService.cs" />
     <Compile Include="Services\IoTSimulationService.cs" />
     <Compile Include="Services\IPointsService.cs" />
     <Compile Include="Services\IReferralService.cs" />
     <Compile Include="Services\IReportService.cs" />
+    <Compile Include="Services\NotificationService.cs" />
     <Compile Include="Services\PointsService.cs" />
     <Compile Include="Services\ReferralService.cs" />
     <Compile Include="Services\ReportService.cs" />
@@ -349,6 +356,7 @@
     <Content Include="Views\Account\ForgotPasswordConfirmation.cshtml" />
     <Content Include="Views\Account\ResetPasswordConfirmation.cshtml" />
     <Content Include="Views\Account\ResetPassword.cshtml" />
+    <Content Include="Views\Resident\Notifications.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
@@ -416,6 +424,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202607271202502_AddAssignedOfficerToAlert.resx">
       <DependentUpon>202607271202502_AddAssignedOfficerToAlert.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202607272016256_AddNotifications.resx">
+      <DependentUpon>202607272016256_AddNotifications.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

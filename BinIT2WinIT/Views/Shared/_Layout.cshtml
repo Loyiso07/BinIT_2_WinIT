@@ -115,6 +115,41 @@
                 transform: scale(1.1);
             }
 
+        /* ✅ NOTIFICATION BELL STYLES */
+        .notification-bell {
+            position: relative;
+            display: inline-block;
+        }
+
+            .notification-bell .badge {
+                position: absolute;
+                top: -8px;
+                right: -8px;
+                font-size: 0.6rem;
+                padding: 3px 6px;
+                border-radius: 50%;
+                min-width: 18px;
+                height: 18px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                animation: pulse 1.5s ease-in-out infinite;
+            }
+
+        @@keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.2);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
         /* ===== FOOTER ===== */
         .footer-custom {
             background: #1A1A2E;
@@ -214,14 +249,28 @@
             }
         }
 
-        /* ===== SECRET NOTIFICATION ANIMATION ===== */
         @@keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px) scale(0.95); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
         }
+
         @@keyframes fadeOutDown {
-            from { opacity: 1; transform: translateY(0) scale(1); }
-            to { opacity: 0; transform: translateY(20px) scale(0.95); }
+            from {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+
+            to {
+                opacity: 0;
+                transform: translateY(20px) scale(0.95);
+            }
         }
     </style>
 </head>
@@ -240,7 +289,7 @@
 
             <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                 <ul class="navbar-nav flex-grow-1">
-                    <!-- ✅ DYNAMIC HOME / DASHBOARD LINK -->
+                    <!-- DYNAMIC HOME / DASHBOARD LINK -->
                     @if (User.Identity.IsAuthenticated)
                     {
                         if (User.IsInRole("Resident"))
@@ -301,6 +350,16 @@
                         <li class="nav-item">
                             <a class="nav-link" href="@Url.Action("Leaderboard", "Resident")">
                                 <i class="fas fa-trophy"></i> Leaderboard
+                            </a>
+                        </li>
+                        <!-- ✅ NOTIFICATION BELL ADDED HERE -->
+                        <li class="nav-item">
+                            <a class="nav-link notification-bell" href="@Url.Action("Notifications", "Resident")" title="Notifications">
+                                <i class="fas fa-bell"></i>
+                                @if (ViewBag.UnreadCount != null && ViewBag.UnreadCount > 0)
+                                {
+                                    <span class="badge bg-danger">@ViewBag.UnreadCount</span>
+                                }
                             </a>
                         </li>
                     }
