@@ -79,27 +79,96 @@ namespace BinIT2WinIT.Controllers
         }
 
         // ============================================================
-        // GET: /Account/Login
+        // GET: /Account/Login (General - Fallback)
         // ============================================================
         [AllowAnonymous]
         public ActionResult Login(string returnUrl)
         {
             ViewBag.ReturnUrl = returnUrl;
-            return View();
+            ViewBag.LoginTitle = "Login";
+            ViewBag.LoginSubtitle = "Log in to your account";
+            ViewBag.Role = "General";
+            ViewBag.ExpectedRole = "General";
+            return View("Login");
         }
 
         // ============================================================
-        // POST: /Account/Login
+        // GET: /Account/UserLogin (Resident)
+        // ============================================================
+        [AllowAnonymous]
+        public ActionResult UserLogin(string returnUrl)
+        {
+            ViewBag.ReturnUrl = returnUrl;
+            ViewBag.LoginTitle = "Resident Login";
+            ViewBag.LoginSubtitle = "Log in to your resident account";
+            ViewBag.Role = "Resident";
+            ViewBag.ExpectedRole = "Resident";
+            return View("Login");
+        }
+
+        // ============================================================
+        // GET: /Account/OfficerLogin (Collection Officer)
+        // ============================================================
+        [AllowAnonymous]
+        public ActionResult OfficerLogin(string returnUrl)
+        {
+            ViewBag.ReturnUrl = returnUrl;
+            ViewBag.LoginTitle = "Officer Login";
+            ViewBag.LoginSubtitle = "Log in to your officer dashboard";
+            ViewBag.Role = "CollectionOfficer";
+            ViewBag.ExpectedRole = "CollectionOfficer";
+            return View("Login");
+        }
+
+        // ============================================================
+        // GET: /Account/AdminLogin (Administrator)
+        // ============================================================
+        [AllowAnonymous]
+        public ActionResult AdminLogin(string returnUrl)
+        {
+            ViewBag.ReturnUrl = returnUrl ?? "/Admin/Dashboard";
+            ViewBag.LoginTitle = "Admin Login";
+            ViewBag.LoginSubtitle = "Secure administrator access";
+            ViewBag.Role = "Administrator";
+            ViewBag.ExpectedRole = "Administrator";
+            return View("Login");
+        }
+
+        // ============================================================
+        // POST: /Account/Login (Handles all role logins with validation)
         // ============================================================
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Login(LoginViewModel model, string returnUrl)
+        public async Task<ActionResult> Login(LoginViewModel model, string returnUrl, string expectedRole)
         {
             if (!ModelState.IsValid)
             {
                 return View(model);
             }
+
+            // Check for empty string AND null - use the first non-empty value
+            string role = "General";
+
+            if (!string.IsNullOrEmpty(expectedRole))
+            {
+                role = expectedRole;
+            }
+            else if (!string.IsNullOrEmpty(model.ExpectedRole))
+            {
+                role = model.ExpectedRole;
+            }
+            else if (!string.IsNullOrEmpty(ViewBag.ExpectedRole as string))
+            {
+                role = ViewBag.ExpectedRole as string;
+            }
+
+            System.Diagnostics.Debug.WriteLine($"=== LOGIN DEBUG ===");
+            System.Diagnostics.Debug.WriteLine($"Email: {model.Email}");
+            System.Diagnostics.Debug.WriteLine($"ExpectedRole from parameter: '{expectedRole ?? "NULL"}'");
+            System.Diagnostics.Debug.WriteLine($"ExpectedRole from model: '{model.ExpectedRole ?? "NULL"}'");
+            System.Diagnostics.Debug.WriteLine($"Using ExpectedRole: '{role}'");
+            System.Diagnostics.Debug.WriteLine($"==================");
 
             var result = await SignInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, shouldLockout: false);
 
@@ -109,6 +178,33 @@ namespace BinIT2WinIT.Controllers
                     var user = await UserManager.FindByEmailAsync(model.Email);
                     if (user != null)
                     {
+                        bool isValidRole = false;
+
+                        switch (role)
+                        {
+                            case "Administrator":
+                                isValidRole = await UserManager.IsInRoleAsync(user.Id, "Administrator");
+                                break;
+                            case "CollectionOfficer":
+                                isValidRole = await UserManager.IsInRoleAsync(user.Id, "CollectionOfficer");
+                                break;
+                            case "Resident":
+                                isValidRole = await UserManager.IsInRoleAsync(user.Id, "Resident");
+                                break;
+                            default:
+                                isValidRole = true;
+                                break;
+                        }
+
+                        System.Diagnostics.Debug.WriteLine($"IsValidRole: {isValidRole}");
+
+                        if (!isValidRole)
+                        {
+                            ModelState.AddModelError("", "❌ Invalid login for this portal. Please use the correct login page for your role.");
+                            AuthenticationManager.SignOut(DefaultAuthenticationTypes.ApplicationCookie);
+                            return View(model);
+                        }
+
                         if (await UserManager.IsInRoleAsync(user.Id, "Administrator"))
                         {
                             return RedirectToAction("Dashboard", "Admin");
@@ -121,6 +217,7 @@ namespace BinIT2WinIT.Controllers
                         {
                             return RedirectToAction("Dashboard", "Resident");
                         }
+                        return RedirectToLocal(returnUrl);
                     }
                     return RedirectToLocal(returnUrl);
 
@@ -138,12 +235,11 @@ namespace BinIT2WinIT.Controllers
         }
 
         // ============================================================
-        // ✅ UPDATED: GET: /Account/Register (Load communities)
+        // GET: /Account/Register
         // ============================================================
         [AllowAnonymous]
         public ActionResult Register()
         {
-            // ✅ LOAD COMMUNITIES FROM DATABASE
             var communities = _context.DropOffPoints
                 .Where(d => d.IsActive)
                 .OrderBy(d => d.Name)
@@ -154,7 +250,6 @@ namespace BinIT2WinIT.Controllers
                 })
                 .ToList();
 
-            // Add "Select Community" option
             communities.Insert(0, new SelectListItem
             {
                 Value = "",
@@ -167,7 +262,7 @@ namespace BinIT2WinIT.Controllers
         }
 
         // ============================================================
-        // ✅ UPDATED: POST: /Account/Register (Save community)
+        // POST: /Account/Register
         // ============================================================
         [HttpPost]
         [AllowAnonymous]
@@ -192,7 +287,7 @@ namespace BinIT2WinIT.Controllers
 
                     if (result.Succeeded)
                     {
-                        // ✅ ENSURE ROLES EXIST
+                        // Ensure roles exist
                         if (!await RoleManager.RoleExistsAsync("Administrator"))
                         {
                             await RoleManager.CreateAsync(new IdentityRole("Administrator"));
@@ -206,10 +301,8 @@ namespace BinIT2WinIT.Controllers
                             await RoleManager.CreateAsync(new IdentityRole("Resident"));
                         }
 
-                        // Add user to Resident role
                         await UserManager.AddToRoleAsync(user.Id, "Resident");
 
-                        // ✅ CREATE RESIDENT PROFILE WITH COMMUNITY
                         var resident = new Resident
                         {
                             UserId = user.Id,
@@ -222,22 +315,18 @@ namespace BinIT2WinIT.Controllers
                             ReferralCode = GenerateReferralCode(),
                             IsActive = true,
                             CreatedAt = DateTime.Now,
-
-                            // ✅ SAVE ADDRESS FIELDS
                             Address = model.Address,
                             Suburb = model.Suburb,
                             City = model.City,
                             Province = model.Province,
                             PostalCode = model.PostalCode,
-
-                            // ✅ SAVE COMMUNITY (Drop-Off Point)
                             DropOffPointId = model.DropOffPointId
                         };
 
                         _context.Residents.Add(resident);
                         await _context.SaveChangesAsync();
 
-                        // ✅ PROCESS REFERRAL CODE
+                        // Process referral code
                         if (!string.IsNullOrEmpty(model.ReferralCode))
                         {
                             var referrer = _context.Residents
@@ -245,13 +334,8 @@ namespace BinIT2WinIT.Controllers
 
                             if (referrer != null && referrer.UserId != user.Id)
                             {
-                                var welcomeBonusConfig = _context.SystemConfigurations
-                                    .FirstOrDefault(c => c.ConfigKey == "WelcomeBonusPoints");
-                                var influencerConfig = _context.SystemConfigurations
-                                    .FirstOrDefault(c => c.ConfigKey == "InfluencerPointsPerReferral");
-
-                                var welcomeBonus = welcomeBonusConfig != null ? int.Parse(welcomeBonusConfig.ConfigValue) : 100;
-                                var influencerPoints = influencerConfig != null ? int.Parse(influencerConfig.ConfigValue) : 50;
+                                var welcomeBonus = GetConfigValue("WelcomeBonusPoints", 100);
+                                var influencerPoints = GetConfigValue("InfluencerPointsPerReferral", 50);
 
                                 var referral = new ReferralTransaction
                                 {
@@ -288,7 +372,7 @@ namespace BinIT2WinIT.Controllers
                 }
             }
 
-            // ✅ RELOAD COMMUNITIES IF REGISTRATION FAILS
+            // Reload communities if registration fails
             var communities = _context.DropOffPoints
                 .Where(d => d.IsActive)
                 .OrderBy(d => d.Name)
@@ -311,7 +395,7 @@ namespace BinIT2WinIT.Controllers
         }
 
         // ============================================================
-        // GET: /Account/Logout (For direct link clicks)
+        // GET: /Account/Logout
         // ============================================================
         [HttpGet]
         public ActionResult Logout()
@@ -321,7 +405,7 @@ namespace BinIT2WinIT.Controllers
         }
 
         // ============================================================
-        // POST: /Account/Logout (For forms - more secure)
+        // POST: /Account/Logout
         // ============================================================
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -332,7 +416,7 @@ namespace BinIT2WinIT.Controllers
         }
 
         // ============================================================
-        // GET: /Account/ForgotPassword
+        // ✅ GET: /Account/ForgotPassword (MISSING - ADDED!)
         // ============================================================
         [AllowAnonymous]
         public ActionResult ForgotPassword()
@@ -341,7 +425,7 @@ namespace BinIT2WinIT.Controllers
         }
 
         // ============================================================
-        // POST: /Account/ForgotPassword
+        // ✅ POST: /Account/ForgotPassword (Shows reset link)
         // ============================================================
         [HttpPost]
         [AllowAnonymous]
@@ -351,10 +435,22 @@ namespace BinIT2WinIT.Controllers
             if (ModelState.IsValid)
             {
                 var user = await UserManager.FindByEmailAsync(model.Email);
-                if (user == null || !(await UserManager.IsEmailConfirmedAsync(user.Id)))
+                if (user != null)
                 {
-                    return View("ForgotPasswordConfirmation");
+                    // Generate password reset token
+                    var code = await UserManager.GeneratePasswordResetTokenAsync(user.Id);
+
+                    // Build the reset link
+                    var callbackUrl = Url.Action("ResetPassword", "Account",
+                        new { userId = user.Id, code = code },
+                        protocol: Request.Url.Scheme);
+
+                    // ✅ FOR DEMO: Store the link in TempData to display on confirmation page
+                    TempData["ResetLink"] = callbackUrl;
                 }
+
+                // Always return the confirmation view (don't reveal if user exists or not)
+                return View("ForgotPasswordConfirmation");
             }
 
             return View(model);
