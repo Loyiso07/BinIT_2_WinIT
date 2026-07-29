@@ -1,4 +1,6 @@
-﻿@{
+﻿@using Microsoft.AspNet.Identity
+
+@{
     ViewBag.Title = "Home Page";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
@@ -10,10 +12,10 @@
             <h1><i class="fas fa-recycle"></i> BinIT2WinIT</h1>
             <p class="lead">Smart Recycling Rewards System</p>
             <p class="mb-4">Earn points, save the planet, and win rewards for recycling!</p>
-            @if (!User.Identity.IsAuthenticated)
+            @if (!Request.IsAuthenticated)
             {
                 <div>
-                    <a href="@Url.Action("Login", "Account")" class="btn btn-light btn-lg me-2">
+                    <a href="@Url.Action("UserLogin", "Account")" class="btn btn-light btn-lg me-2">
                         <i class="fas fa-sign-in-alt"></i> Login
                     </a>
                     <a href="@Url.Action("Register", "Account")" class="btn btn-outline-light btn-lg">
@@ -50,8 +52,8 @@
         </div>
     </div>
 
-    <!-- Stats Section (Visible when logged in) -->
-    @if (User.Identity.IsAuthenticated && User.IsInRole("Resident"))
+    <!-- Stats Section (Visible when logged in as Resident) -->
+    @if (Request.IsAuthenticated && User.IsInRole("Resident"))
     {
         <div class="row mb-4 text-center">
             <div class="col-md-3">
@@ -89,77 +91,101 @@
         </div>
     }
 
-    <!-- Feature Cards -->
-    <div class="row">
-        <!-- For Residents -->
-        <div class="col-md-4 mb-4">
-            <div class="card feature-card text-center p-4">
-                <div class="feature-icon text-success">
-                    <i class="fas fa-user"></i>
+    <!-- Feature Cards - Hide completely when logged in -->
+    @if (!Request.IsAuthenticated)
+    {
+        <div class="row">
+            <!-- For Residents -->
+            <div class="col-md-6 mb-4">
+                <div class="card feature-card text-center p-4">
+                    <div class="feature-icon text-success">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <h4>Resident Portal</h4>
+                    <p class="text-muted">Submit recycling, track your points, and see your environmental impact.</p>
+                    <a href="@Url.Action("UserLogin", "Account")" class="btn btn-outline-success">
+                        <i class="fas fa-sign-in-alt"></i> Resident Login
+                    </a>
                 </div>
-                <h4>Resident Portal</h4>
-                <p class="text-muted">Submit recycling, track your points, and see your environmental impact.</p>
-                @if (User.Identity.IsAuthenticated && User.IsInRole("Resident"))
-                {
-                    <a href="@Url.Action("Dashboard", "Resident")" class="btn btn-recycle">
-                        <i class="fas fa-arrow-right"></i> Go to Dashboard
-                    </a>
-                }
-                else
-                {
-                    <a href="@Url.Action("Login", "Account")" class="btn btn-outline-success">
-                        <i class="fas fa-sign-in-alt"></i> Login
-                    </a>
-                }
             </div>
-        </div>
 
-        <!-- For Collection Officers -->
-        <div class="col-md-4 mb-4">
-            <div class="card feature-card text-center p-4">
-                <div class="feature-icon text-primary">
-                    <i class="fas fa-clipboard-check"></i>
+            <!-- For Collection Officers -->
+            <div class="col-md-6 mb-4">
+                <div class="card feature-card text-center p-4">
+                    <div class="feature-icon text-primary">
+                        <i class="fas fa-clipboard-check"></i>
+                    </div>
+                    <h4>Officer Portal</h4>
+                    <p class="text-muted">Verify recycling submissions, award points, and manage collections.</p>
+                    <a href="@Url.Action("OfficerLogin", "Account")" class="btn btn-outline-primary">
+                        <i class="fas fa-sign-in-alt"></i> Officer Login
+                    </a>
                 </div>
-                <h4>Officer Portal</h4>
-                <p class="text-muted">Verify recycling submissions, award points, and manage collections.</p>
-                @if (User.Identity.IsAuthenticated && User.IsInRole("CollectionOfficer"))
-                {
-                    <a href="@Url.Action("Dashboard", "Officer")" class="btn btn-recycle">
-                        <i class="fas fa-arrow-right"></i> Go to Dashboard
-                    </a>
-                }
-                else
-                {
-                    <a href="@Url.Action("Login", "Account")" class="btn btn-outline-primary">
-                        <i class="fas fa-sign-in-alt"></i> Login
-                    </a>
-                }
             </div>
         </div>
-
-        <!-- For Administrators -->
-        <div class="col-md-4 mb-4">
-            <div class="card feature-card text-center p-4">
-                <div class="feature-icon text-warning">
-                    <i class="fas fa-cog"></i>
+    }
+    else
+    {
+        <!-- Show Quick Access Cards when logged in -->
+        <div class="row">
+            <div class="col-md-12 mb-4">
+                <div class="card feature-card text-center p-4">
+                    <div class="feature-icon text-success">
+                        @if (User.IsInRole("Resident"))
+                        {
+                            <i class="fas fa-user"></i>
+                        }
+                        else if (User.IsInRole("CollectionOfficer"))
+                        {
+                            <i class="fas fa-clipboard-check"></i>
+                        }
+                        else if (User.IsInRole("Administrator"))
+                        {
+                            <i class="fas fa-cog"></i>
+                        }
+                    </div>
+                    <h4>Welcome Back, @User.Identity.Name!</h4>
+                    <p class="text-muted">
+                        @if (User.IsInRole("Resident"))
+                        {
+                            <span>Continue recycling and earning points!</span>
+                        }
+                        else if (User.IsInRole("CollectionOfficer"))
+                        {
+                            <span>Review pending submissions and verify recycling activities.</span>
+                        }
+                        else if (User.IsInRole("Administrator"))
+                        {
+                            <span>Manage the system and monitor community recycling.</span>
+                        }
+                    </p>
+                    @if (User.IsInRole("Resident"))
+                    {
+                        <div>
+                            <a href="@Url.Action("Dashboard", "Resident")" class="btn btn-recycle">
+                                <i class="fas fa-arrow-right"></i> Go to Dashboard
+                            </a>
+                            <a href="@Url.Action("SubmitRecycling", "Resident")" class="btn btn-outline-success ms-2">
+                                <i class="fas fa-recycle"></i> Recycle Now
+                            </a>
+                        </div>
+                    }
+                    else if (User.IsInRole("CollectionOfficer"))
+                    {
+                        <a href="@Url.Action("Dashboard", "Officer")" class="btn btn-recycle">
+                            <i class="fas fa-arrow-right"></i> Go to Dashboard
+                        </a>
+                    }
+                    else if (User.IsInRole("Administrator"))
+                    {
+                        <a href="@Url.Action("Dashboard", "Admin")" class="btn btn-recycle">
+                            <i class="fas fa-arrow-right"></i> Go to Dashboard
+                        </a>
+                    }
                 </div>
-                <h4>Admin Portal</h4>
-                <p class="text-muted">Manage users, configure points rates, and generate reports.</p>
-                @if (User.Identity.IsAuthenticated && User.IsInRole("Administrator"))
-                {
-                    <a href="@Url.Action("Dashboard", "Admin")" class="btn btn-recycle">
-                        <i class="fas fa-arrow-right"></i> Go to Dashboard
-                    </a>
-                }
-                else
-                {
-                    <a href="@Url.Action("Login", "Account")" class="btn btn-outline-warning">
-                        <i class="fas fa-sign-in-alt"></i> Login
-                    </a>
-                }
             </div>
         </div>
-    </div>
+    }
 
     <!-- Quick Links Section -->
     <div class="row mt-4">
@@ -167,7 +193,7 @@
             <div class="card feature-card p-4">
                 <h4 class="text-center mb-3"><i class="fas fa-link"></i> Quick Links</h4>
                 <div class="row text-center">
-                    @if (User.Identity.IsAuthenticated)
+                    @if (Request.IsAuthenticated)
                     {
                         if (User.IsInRole("Resident"))
                         {
@@ -227,7 +253,7 @@
                     else
                     {
                         <div class="col-md-6 col-12 mb-2">
-                            <a href="@Url.Action("Login", "Account")" class="btn btn-primary w-100">
+                            <a href="@Url.Action("UserLogin", "Account")" class="btn btn-primary w-100">
                                 <i class="fas fa-sign-in-alt"></i> Login
                             </a>
                         </div>

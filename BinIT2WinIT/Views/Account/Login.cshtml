@@ -1,23 +1,79 @@
 ﻿@model BinIT2WinIT.Models.LoginViewModel
 
 @{
-    ViewBag.Title = "Log in";
+    ViewBag.Title = ViewBag.LoginTitle ?? "Log in";
     Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var loginTitle = ViewBag.LoginTitle ?? "Log in";
+    var loginSubtitle = ViewBag.LoginSubtitle ?? "Log in to your account";
+    var role = ViewBag.Role as string ?? "General";
+
+    // ✅ DETERMINE EXPECTED ROLE FROM THE URL (MOST RELIABLE)
+    var expectedRole = "General";
+    var currentUrl = Request.Url.AbsolutePath;
+
+    if (currentUrl.Contains("OfficerLogin") || currentUrl.Contains("Officer"))
+    {
+        expectedRole = "CollectionOfficer";
+    }
+    else if (currentUrl.Contains("AdminLogin") || currentUrl.Contains("Admin"))
+    {
+        expectedRole = "Administrator";
+    }
+    else if (currentUrl.Contains("UserLogin") || currentUrl.Contains("User"))
+    {
+        expectedRole = "Resident";
+    }
+    else if (!string.IsNullOrEmpty(ViewBag.ExpectedRole as string))
+    {
+        expectedRole = ViewBag.ExpectedRole as string;
+    }
+
+    // Determine styling based on role
+    var headerColor = role == "Administrator" ? "bg-danger" :
+                     role == "CollectionOfficer" ? "bg-primary" :
+                     "bg-success";
+
+    var buttonColor = role == "Administrator" ? "btn-danger" :
+                     role == "CollectionOfficer" ? "btn-primary" :
+                     "btn-success";
+
+    var icon = role == "Administrator" ? "fa-lock" :
+               role == "CollectionOfficer" ? "fa-clipboard-check" :
+               "fa-user";
+
+    var showRegisterLink = role != "Administrator" && role != "CollectionOfficer";
 }
 
 <div class="row justify-content-center">
-    <div class="col-md-6 col-lg-4">
+    <div class="col-md-6 col-lg-5">
         <div class="card shadow-lg mt-5">
-            <div class="card-header bg-success text-white text-center">
-                <h4><i class="fas fa-recycle"></i> BinIT2WinIT</h4>
-                <h5>Log in to your account</h5>
+            <div class="card-header @headerColor text-white text-center">
+                <h4>
+                    <i class="fas @icon"></i>
+                    @loginTitle
+                </h4>
+                <p class="mb-0 small">@loginSubtitle</p>
             </div>
             <div class="card-body">
-                @using (Html.BeginForm("Login", "Account", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
+                @if (role == "Administrator")
+                {
+                    <div class="alert alert-danger small">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        This is a secure admin portal. Unauthorized access is prohibited.
+                    </div>
+                }
+
+                <!-- ✅ Pass expectedRole - use the determined value -->
+                @using (Html.BeginForm("Login", "Account", new { ReturnUrl = ViewBag.ReturnUrl, expectedRole = expectedRole }, FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
                 {
                     @Html.AntiForgeryToken()
 
                     @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+                    <!-- ✅ Hidden field with the determined value -->
+                    <input type="hidden" name="expectedRole" value="@expectedRole" />
+                    @Html.HiddenFor(m => m.ExpectedRole)
 
                     <div class="form-group mb-3">
                         @Html.LabelFor(m => m.Email, new { @class = "form-label fw-bold" })
@@ -39,18 +95,21 @@
                     </div>
 
                     <div class="form-group mb-3">
-                        <button type="submit" class="btn btn-success w-100">
-                            <i class="fas fa-sign-in-alt"></i> Log in
+                        <button type="submit" class="btn @buttonColor w-100">
+                            <i class="fas fa-sign-in-alt"></i> @loginTitle
                         </button>
                     </div>
 
                     <hr />
 
                     <div class="text-center">
-                        <p>
-                            Don't have an account?
-                            @Html.ActionLink("Register here", "Register", null, new { @class = "text-success fw-bold" })
-                        </p>
+                        @if (showRegisterLink)
+                        {
+                            <p>
+                                Don't have an account?
+                                @Html.ActionLink("Register here", "Register", null, new { @class = "text-success fw-bold" })
+                            </p>
+                        }
                         <p>
                             @Html.ActionLink("Forgot your password?", "ForgotPassword", null, new { @class = "text-muted" })
                         </p>

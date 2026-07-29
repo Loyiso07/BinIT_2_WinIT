@@ -177,7 +177,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\BinIT2WinIT\BinIT2WinIT.csproj">
-      <Project>{21FC829D-0073-4E59-A5C6-590C66121E9A}</Project>
+      <Project>{21fc829d-0073-4e59-a5c6-590c66121e9a}</Project>
       <Name>BinIT2WinIT</Name>
     </ProjectReference>
   </ItemGroup>
