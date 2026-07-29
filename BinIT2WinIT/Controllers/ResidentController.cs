@@ -445,7 +445,7 @@ namespace BinIT2WinIT.Controllers
                 ResidentId = resident.ResidentId,
                 ResidentName = resident.FullName,
                 PointsBalance = resident.PointsBalance,
-                AvailableOptions = options
+                RedemptionOptions = options
             };
 
             return View(viewModel);
@@ -470,7 +470,7 @@ namespace BinIT2WinIT.Controllers
             if (!ModelState.IsValid)
             {
                 model.PointsBalance = resident.PointsBalance;
-                model.AvailableOptions = await _context.RedemptionOptions
+                model.RedemptionOptions = await _context.RedemptionOptions
                     .Where(o => o.IsActive)
                     .ToListAsync();
                 return View(model);
@@ -483,7 +483,7 @@ namespace BinIT2WinIT.Controllers
             {
                 ModelState.AddModelError("", "Invalid redemption option selected.");
                 model.PointsBalance = resident.PointsBalance;
-                model.AvailableOptions = await _context.RedemptionOptions
+                model.RedemptionOptions = await _context.RedemptionOptions
                     .Where(o => o.IsActive)
                     .ToListAsync();
                 return View(model);
@@ -494,7 +494,7 @@ namespace BinIT2WinIT.Controllers
             {
                 ModelState.AddModelError("", $"You need {selectedOption.PointsRequired} points to redeem this option. You have {resident.PointsBalance} points.");
                 model.PointsBalance = resident.PointsBalance;
-                model.AvailableOptions = await _context.RedemptionOptions
+                model.RedemptionOptions = await _context.RedemptionOptions
                     .Where(o => o.IsActive)
                     .ToListAsync();
                 return View(model);
@@ -505,7 +505,7 @@ namespace BinIT2WinIT.Controllers
             {
                 ModelState.AddModelError("UtilityAccountNumber", "Please enter your municipal utility account number.");
                 model.PointsBalance = resident.PointsBalance;
-                model.AvailableOptions = await _context.RedemptionOptions
+                model.RedemptionOptions = await _context.RedemptionOptions
                     .Where(o => o.IsActive)
                     .ToListAsync();
                 return View(model);
@@ -545,16 +545,25 @@ namespace BinIT2WinIT.Controllers
 
             await _context.SaveChangesAsync();
 
-            // ✅ Send notification - FIXED: using request.ReferenceNumber (string) instead of request.RequestId (int)
+            // ✅ FIXED: Safe notification service call with null checks and fallback
             try
             {
-                await NotificationService.SendNotification(
-                    userId,
-                    "Redemption Request Submitted",
-                    $"Your request to redeem {selectedOption.PointsRequired} points for a R{selectedOption.DiscountAmount} {selectedOption.UtilityType} discount has been submitted. Reference: {request.ReferenceNumber}",
-                    "Redemption",
-                    request.ReferenceNumber  // ✅ This is a string
-                );
+                var notificationService = NotificationService;
+                if (notificationService != null && !string.IsNullOrEmpty(request.ReferenceNumber))
+                {
+                    await notificationService.SendNotification(
+                        userId,
+                        "Redemption Request Submitted",
+                        $"Your request to redeem {selectedOption.PointsRequired} points for a R{selectedOption.DiscountAmount} {selectedOption.UtilityType} discount has been submitted. Reference: {request.ReferenceNumber}",
+                        "Redemption",
+                        request.ReferenceNumber
+                    );
+                }
+                else
+                {
+                    // Log to debug output if service is missing (won't crash app)
+                    System.Diagnostics.Debug.WriteLine($"NotificationService is null or ReferenceNumber is empty. Notification skipped for User: {userId}");
+                }
             }
             catch (Exception ex)
             {

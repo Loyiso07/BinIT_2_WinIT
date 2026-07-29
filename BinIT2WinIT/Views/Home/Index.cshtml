@@ -5,288 +5,545 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<main>
-    <!-- Hero Section -->
-    <div class="hero-section text-center">
-        <div class="container">
-            <h1><i class="fas fa-recycle"></i> BinIT2WinIT</h1>
-            <p class="lead">Smart Recycling Rewards System</p>
-            <p class="mb-4">Earn points, save the planet, and win rewards for recycling!</p>
+<style>
+    /* Hero Section with Background Image */
+    .hero-section {
+        background-image: url('@Url.Content("~/Content/recycling-hero.jpg")');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        min-height: 100vh;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 80px 0;
+        width: 100%;
+    }
+
+    .hero-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.65);
+        z-index: 1;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+        color: white;
+        text-align: center;
+        padding: 40px 20px;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .hero-content h1 {
+        font-size: 4.5rem;
+        font-weight: 700;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        margin-bottom: 10px;
+    }
+
+    .hero-content h1 i {
+        color: #28a745;
+    }
+
+    .hero-content .lead {
+        font-size: 1.8rem;
+        font-weight: 300;
+        margin-bottom: 10px;
+        text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+    }
+
+    .hero-content .sub-text {
+        font-size: 1.3rem;
+        opacity: 0.9;
+        margin-bottom: 35px;
+        text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+    }
+
+    .hero-buttons .btn {
+        margin: 5px 10px;
+        padding: 14px 40px;
+        font-size: 1.1rem;
+        border-radius: 30px;
+        transition: all 0.3s ease;
+        font-weight: 600;
+    }
+
+    .hero-buttons .btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+
+    .btn-hero-primary {
+        background-color: #28a745;
+        color: white;
+        border: 2px solid #28a745;
+    }
+
+    .btn-hero-primary:hover {
+        background-color: #218838;
+        border-color: #218838;
+        color: white;
+    }
+
+    .btn-hero-secondary {
+        background-color: transparent;
+        color: white;
+        border: 2px solid white;
+    }
+
+    .btn-hero-secondary:hover {
+        background-color: white;
+        color: #333;
+    }
+
+    .btn-hero-outline {
+        background-color: transparent;
+        color: white;
+        border: 2px solid #17a2b8;
+    }
+
+    .btn-hero-outline:hover {
+        background-color: #17a2b8;
+        color: white;
+    }
+
+    /* Stats Section */
+    .stats-section {
+        padding: 40px 0;
+        background-color: #f8f9fa;
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #28a745;
+    }
+
+    /* Feature Cards */
+    .feature-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+        height: 100%;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    }
+
+    .feature-icon {
+        font-size: 3rem;
+        margin-bottom: 15px;
+    }
+
+    .btn-recycle {
+        background-color: #28a745;
+        color: white;
+        border: 2px solid #28a745;
+        padding: 10px 30px;
+        border-radius: 30px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-recycle:hover {
+        background-color: #218838;
+        border-color: #218838;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+    }
+
+    /* Quick Links */
+    .quick-links .btn {
+        border-radius: 25px;
+        padding: 10px 20px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .quick-links .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .hero-section {
+            min-height: 80vh;
+        }
+        .hero-content h1 {
+            font-size: 2.8rem;
+        }
+        .hero-content .lead {
+            font-size: 1.3rem;
+        }
+        .hero-content .sub-text {
+            font-size: 1rem;
+        }
+        .hero-buttons .btn {
+            display: block;
+            margin: 10px auto;
+            width: 80%;
+        }
+        .stat-number {
+            font-size: 1.8rem;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .hero-section {
+            min-height: 70vh;
+        }
+        .hero-content h1 {
+            font-size: 2rem;
+        }
+        .hero-content .lead {
+            font-size: 1rem;
+        }
+        .hero-buttons .btn {
+            width: 90%;
+            font-size: 0.9rem;
+            padding: 10px 20px;
+        }
+    }
+</style>
+
+<!-- ============================================================ -->
+<!-- HERO SECTION WITH BACKGROUND IMAGE -->
+<!-- ============================================================ -->
+<section class="hero-section">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+        <h1><i class="fas fa-recycle"></i> BinIT2WinIT</h1>
+        <p class="lead">Smart Recycling Rewards System</p>
+        <p class="sub-text">
+            <i class="fas fa-leaf"></i> Earn points, save the planet, and win rewards for recycling!
+        </p>
+        <div class="hero-buttons">
             @if (!Request.IsAuthenticated)
             {
-                <div>
-                    <a href="@Url.Action("UserLogin", "Account")" class="btn btn-light btn-lg me-2">
-                        <i class="fas fa-sign-in-alt"></i> Login
-                    </a>
-                    <a href="@Url.Action("Register", "Account")" class="btn btn-outline-light btn-lg">
-                        <i class="fas fa-user-plus"></i> Register
-                    </a>
-                </div>
+                <a href="@Url.Action("UserLogin", "Account")" class="btn btn-hero-secondary">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </a>
+                <a href="@Url.Action("Register", "Account")" class="btn btn-hero-primary">
+                    <i class="fas fa-user-plus"></i> Register
+                </a>
             }
             else
             {
-                <div>
-                    @if (User.IsInRole("Resident"))
-                    {
-                        <a href="@Url.Action("Dashboard", "Resident")" class="btn btn-light btn-lg me-2">
-                            <i class="fas fa-home"></i> Dashboard
-                        </a>
-                        <a href="@Url.Action("SubmitRecycling", "Resident")" class="btn btn-outline-light btn-lg">
-                            <i class="fas fa-recycle"></i> Recycle Now
-                        </a>
-                    }
-                    else if (User.IsInRole("CollectionOfficer"))
-                    {
-                        <a href="@Url.Action("Dashboard", "Officer")" class="btn btn-light btn-lg">
-                            <i class="fas fa-clipboard-check"></i> Officer Dashboard
-                        </a>
-                    }
-                    else if (User.IsInRole("Administrator"))
-                    {
-                        <a href="@Url.Action("Dashboard", "Admin")" class="btn btn-light btn-lg">
-                            <i class="fas fa-cog"></i> Admin Dashboard
-                        </a>
-                    }
-                </div>
+                if (User.IsInRole("Resident"))
+                {
+                    <a href="@Url.Action("Dashboard", "Resident")" class="btn btn-hero-primary">
+                        <i class="fas fa-home"></i> Dashboard
+                    </a>
+                    <a href="@Url.Action("SubmitRecycling", "Resident")" class="btn btn-hero-secondary">
+                        <i class="fas fa-recycle"></i> Recycle Now
+                    </a>
+                }
+                else if (User.IsInRole("CollectionOfficer"))
+                {
+                    <a href="@Url.Action("Dashboard", "Officer")" class="btn btn-hero-primary">
+                        <i class="fas fa-clipboard-check"></i> Officer Dashboard
+                    </a>
+                }
+                else if (User.IsInRole("Administrator"))
+                {
+                    <a href="@Url.Action("Dashboard", "Admin")" class="btn btn-hero-primary">
+                        <i class="fas fa-cog"></i> Admin Dashboard
+                    </a>
+                }
             }
+            <a href="#about" class="btn btn-hero-outline">
+                <i class="fas fa-info-circle"></i> Learn More
+            </a>
         </div>
     </div>
+</section>
 
-    <!-- Stats Section (Visible when logged in as Resident) -->
-    @if (Request.IsAuthenticated && User.IsInRole("Resident"))
-    {
-        <div class="row mb-4 text-center">
-            <div class="col-md-3">
-                <div class="card feature-card p-3">
-                    <div class="card-body">
-                        <div class="stat-number">@ViewBag.PointsBalance</div>
-                        <p class="text-muted">Total Points</p>
+<!-- ============================================================ -->
+<!-- STATS SECTION (Visible when logged in as Resident) -->
+<!-- ============================================================ -->
+@if (Request.IsAuthenticated && User.IsInRole("Resident"))
+{
+    <section class="stats-section">
+        <div class="container">
+            <div class="row text-center">
+                <div class="col-md-3 col-6 mb-3">
+                    <div class="card feature-card p-3">
+                        <div class="card-body">
+                            <div class="stat-number">@ViewBag.PointsBalance</div>
+                            <p class="text-muted mb-0">Total Points</p>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card feature-card p-3">
-                    <div class="card-body">
-                        <div class="stat-number">@ViewBag.InfluencerPoints</div>
-                        <p class="text-muted">Influencer Points</p>
+                <div class="col-md-3 col-6 mb-3">
+                    <div class="card feature-card p-3">
+                        <div class="card-body">
+                            <div class="stat-number">@ViewBag.InfluencerPoints</div>
+                            <p class="text-muted mb-0">Influencer Points</p>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card feature-card p-3">
-                    <div class="card-body">
-                        <div class="stat-number">@ViewBag.Co2Saved</div>
-                        <p class="text-muted">CO2 Saved (kg)</p>
+                <div class="col-md-3 col-6 mb-3">
+                    <div class="card feature-card p-3">
+                        <div class="card-body">
+                            <div class="stat-number">@ViewBag.Co2Saved</div>
+                            <p class="text-muted mb-0">CO₂ Saved (kg)</p>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card feature-card p-3">
-                    <div class="card-body">
-                        <div class="stat-number">@ViewBag.Rank</div>
-                        <p class="text-muted">Leaderboard Rank</p>
+                <div class="col-md-3 col-6 mb-3">
+                    <div class="card feature-card p-3">
+                        <div class="card-body">
+                            <div class="stat-number">@ViewBag.Rank</div>
+                            <p class="text-muted mb-0">Leaderboard Rank</p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    }
+    </section>
+}
 
-    <!-- Feature Cards - Hide completely when logged in -->
-    @if (!Request.IsAuthenticated)
-    {
-        <div class="row">
-            <!-- For Residents -->
-            <div class="col-md-6 mb-4">
-                <div class="card feature-card text-center p-4">
-                    <div class="feature-icon text-success">
-                        <i class="fas fa-user"></i>
-                    </div>
-                    <h4>Resident Portal</h4>
-                    <p class="text-muted">Submit recycling, track your points, and see your environmental impact.</p>
-                    <a href="@Url.Action("UserLogin", "Account")" class="btn btn-outline-success">
-                        <i class="fas fa-sign-in-alt"></i> Resident Login
-                    </a>
-                </div>
-            </div>
-
-            <!-- For Collection Officers -->
-            <div class="col-md-6 mb-4">
-                <div class="card feature-card text-center p-4">
-                    <div class="feature-icon text-primary">
-                        <i class="fas fa-clipboard-check"></i>
-                    </div>
-                    <h4>Officer Portal</h4>
-                    <p class="text-muted">Verify recycling submissions, award points, and manage collections.</p>
-                    <a href="@Url.Action("OfficerLogin", "Account")" class="btn btn-outline-primary">
-                        <i class="fas fa-sign-in-alt"></i> Officer Login
-                    </a>
-                </div>
-            </div>
-        </div>
-    }
-    else
-    {
-        <!-- Show Quick Access Cards when logged in -->
-        <div class="row">
-            <div class="col-md-12 mb-4">
-                <div class="card feature-card text-center p-4">
-                    <div class="feature-icon text-success">
-                        @if (User.IsInRole("Resident"))
-                        {
-                            <i class="fas fa-user"></i>
-                        }
-                        else if (User.IsInRole("CollectionOfficer"))
-                        {
-                            <i class="fas fa-clipboard-check"></i>
-                        }
-                        else if (User.IsInRole("Administrator"))
-                        {
-                            <i class="fas fa-cog"></i>
-                        }
-                    </div>
-                    <h4>Welcome Back, @User.Identity.Name!</h4>
-                    <p class="text-muted">
-                        @if (User.IsInRole("Resident"))
-                        {
-                            <span>Continue recycling and earning points!</span>
-                        }
-                        else if (User.IsInRole("CollectionOfficer"))
-                        {
-                            <span>Review pending submissions and verify recycling activities.</span>
-                        }
-                        else if (User.IsInRole("Administrator"))
-                        {
-                            <span>Manage the system and monitor community recycling.</span>
-                        }
+<!-- ============================================================ -->
+<!-- PORTALS SECTION (Only visible when not logged in) -->
+<!-- ============================================================ -->
+@if (!Request.IsAuthenticated)
+{
+    <section class="py-5" style="background-color: #f8f9fa;">
+        <div class="container">
+            <div class="row text-center mb-5">
+                <div class="col-12">
+                    <h2 style="font-weight:700; color:#333;">Choose Your Portal</h2>
+                    <p class="text-muted" style="font-size:1.1rem;">
+                        Select the portal that matches your role
                     </p>
-                    @if (User.IsInRole("Resident"))
-                    {
-                        <div>
-                            <a href="@Url.Action("Dashboard", "Resident")" class="btn btn-recycle">
+                    <hr style="width:80px; margin:15px auto; border-color:#28a745; border-width:3px;" />
+                </div>
+            </div>
+            <div class="row">
+                <!-- Resident Portal -->
+                <div class="col-md-6 mb-4">
+                    <div class="card feature-card text-center p-4">
+                        <div class="feature-icon text-success">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <h4>Resident Portal</h4>
+                        <p class="text-muted">Submit recycling, track your points, and see your environmental impact.</p>
+                        <a href="@Url.Action("UserLogin", "Account")" class="btn btn-success" style="border-radius:30px; padding:10px 30px;">
+                            <i class="fas fa-sign-in-alt"></i> Resident Login
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Officer Portal -->
+                <div class="col-md-6 mb-4">
+                    <div class="card feature-card text-center p-4">
+                        <div class="feature-icon text-primary">
+                            <i class="fas fa-clipboard-check"></i>
+                        </div>
+                        <h4>Officer Portal</h4>
+                        <p class="text-muted">Verify recycling submissions, award points, and manage collections.</p>
+                        <a href="@Url.Action("OfficerLogin", "Account")" class="btn btn-primary" style="border-radius:30px; padding:10px 30px;">
+                            <i class="fas fa-sign-in-alt"></i> Officer Login
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+}
+
+<!-- ============================================================ -->
+<!-- WELCOME BACK SECTION (Visible when logged in) -->
+<!-- ============================================================ -->
+@if (Request.IsAuthenticated)
+{
+    <section class="py-5" style="background-color: #f8f9fa;">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card feature-card text-center p-4">
+                        <div class="feature-icon text-success">
+                            @if (User.IsInRole("Resident"))
+                            {
+                                <i class="fas fa-user"></i>
+                            }
+                            else if (User.IsInRole("CollectionOfficer"))
+                            {
+                                <i class="fas fa-clipboard-check"></i>
+                            }
+                            else if (User.IsInRole("Administrator"))
+                            {
+                                <i class="fas fa-cog"></i>
+                            }
+                        </div>
+                        <h4>Welcome Back, @User.Identity.Name!</h4>
+                        <p class="text-muted">
+                            @if (User.IsInRole("Resident"))
+                            {
+                                <span>Continue recycling and earning points!</span>
+                            }
+                            else if (User.IsInRole("CollectionOfficer"))
+                            {
+                                <span>Review pending submissions and verify recycling activities.</span>
+                            }
+                            else if (User.IsInRole("Administrator"))
+                            {
+                                <span>Manage the system and monitor community recycling.</span>
+                            }
+                        </p>
+                        @if (User.IsInRole("Resident"))
+                        {
+                            <div>
+                                <a href="@Url.Action("Dashboard", "Resident")" class="btn btn-recycle">
+                                    <i class="fas fa-arrow-right"></i> Go to Dashboard
+                                </a>
+                                <a href="@Url.Action("SubmitRecycling", "Resident")" class="btn btn-outline-success ms-2" style="border-radius:30px; padding:10px 30px;">
+                                    <i class="fas fa-recycle"></i> Recycle Now
+                                </a>
+                            </div>
+                        }
+                        else if (User.IsInRole("CollectionOfficer"))
+                        {
+                            <a href="@Url.Action("Dashboard", "Officer")" class="btn btn-recycle">
                                 <i class="fas fa-arrow-right"></i> Go to Dashboard
                             </a>
-                            <a href="@Url.Action("SubmitRecycling", "Resident")" class="btn btn-outline-success ms-2">
-                                <i class="fas fa-recycle"></i> Recycle Now
-                            </a>
-                        </div>
-                    }
-                    else if (User.IsInRole("CollectionOfficer"))
-                    {
-                        <a href="@Url.Action("Dashboard", "Officer")" class="btn btn-recycle">
-                            <i class="fas fa-arrow-right"></i> Go to Dashboard
-                        </a>
-                    }
-                    else if (User.IsInRole("Administrator"))
-                    {
-                        <a href="@Url.Action("Dashboard", "Admin")" class="btn btn-recycle">
-                            <i class="fas fa-arrow-right"></i> Go to Dashboard
-                        </a>
-                    }
-                </div>
-            </div>
-        </div>
-    }
-
-    <!-- Quick Links Section -->
-    <div class="row mt-4">
-        <div class="col-12">
-            <div class="card feature-card p-4">
-                <h4 class="text-center mb-3"><i class="fas fa-link"></i> Quick Links</h4>
-                <div class="row text-center">
-                    @if (Request.IsAuthenticated)
-                    {
-                        if (User.IsInRole("Resident"))
-                        {
-                            <div class="col-md-3 col-6 mb-2">
-                                <a href="@Url.Action("SubmitRecycling", "Resident")" class="btn btn-success w-100">
-                                    <i class="fas fa-recycle"></i> Submit Recycling
-                                </a>
-                            </div>
-                            <div class="col-md-3 col-6 mb-2">
-                                <a href="@Url.Action("PointsHistory", "Resident")" class="btn btn-info w-100 text-white">
-                                    <i class="fas fa-history"></i> Points History
-                                </a>
-                            </div>
-                            <div class="col-md-3 col-6 mb-2">
-                                <a href="@Url.Action("Leaderboard", "Resident")" class="btn btn-warning w-100">
-                                    <i class="fas fa-trophy"></i> Leaderboard
-                                </a>
-                            </div>
-                            <div class="col-md-3 col-6 mb-2">
-                                <a href="@Url.Action("InfluencerPoints", "Resident")" class="btn btn-secondary w-100">
-                                    <i class="fas fa-share-alt"></i> Influencer Points
-                                </a>
-                            </div>
-                        }
-                        else if (User.IsInRole("CollectionOfficer"))
-                        {
-                            <div class="col-md-6 col-12 mb-2">
-                                <a href="@Url.Action("Pending", "Officer")" class="btn btn-warning w-100">
-                                    <i class="fas fa-clock"></i> Pending Submissions
-                                </a>
-                            </div>
-                            <div class="col-md-6 col-12 mb-2">
-                                <a href="@Url.Action("Dashboard", "Officer")" class="btn btn-primary w-100">
-                                    <i class="fas fa-chart-bar"></i> Statistics
-                                </a>
-                            </div>
                         }
                         else if (User.IsInRole("Administrator"))
                         {
-                            <div class="col-md-4 col-12 mb-2">
-                                <a href="@Url.Action("Users", "Admin")" class="btn btn-primary w-100">
-                                    <i class="fas fa-users"></i> Manage Users
+                            <a href="@Url.Action("Dashboard", "Admin")" class="btn btn-recycle">
+                                <i class="fas fa-arrow-right"></i> Go to Dashboard
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+}
+
+<!-- ============================================================ -->
+<!-- QUICK LINKS SECTION -->
+<!-- ============================================================ -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="card feature-card p-4">
+                    <h4 class="text-center mb-3"><i class="fas fa-link"></i> Quick Links</h4>
+                    <div class="row text-center quick-links">
+                        @if (Request.IsAuthenticated)
+                        {
+                            if (User.IsInRole("Resident"))
+                            {
+                                <div class="col-md-3 col-6 mb-2">
+                                    <a href="@Url.Action("SubmitRecycling", "Resident")" class="btn btn-success w-100">
+                                        <i class="fas fa-recycle"></i> Submit Recycling
+                                    </a>
+                                </div>
+                                <div class="col-md-3 col-6 mb-2">
+                                    <a href="@Url.Action("PointsHistory", "Resident")" class="btn btn-info w-100 text-white">
+                                        <i class="fas fa-history"></i> Points History
+                                    </a>
+                                </div>
+                                <div class="col-md-3 col-6 mb-2">
+                                    <a href="@Url.Action("Leaderboard", "Resident")" class="btn btn-warning w-100">
+                                        <i class="fas fa-trophy"></i> Leaderboard
+                                    </a>
+                                </div>
+                                <div class="col-md-3 col-6 mb-2">
+                                    <a href="@Url.Action("InfluencerPoints", "Resident")" class="btn btn-secondary w-100">
+                                        <i class="fas fa-share-alt"></i> Influencer Points
+                                    </a>
+                                </div>
+                            }
+                            else if (User.IsInRole("CollectionOfficer"))
+                            {
+                                <div class="col-md-6 col-12 mb-2">
+                                    <a href="@Url.Action("Pending", "Officer")" class="btn btn-warning w-100">
+                                        <i class="fas fa-clock"></i> Pending Submissions
+                                    </a>
+                                </div>
+                                <div class="col-md-6 col-12 mb-2">
+                                    <a href="@Url.Action("Dashboard", "Officer")" class="btn btn-primary w-100">
+                                        <i class="fas fa-chart-bar"></i> Statistics
+                                    </a>
+                                </div>
+                            }
+                            else if (User.IsInRole("Administrator"))
+                            {
+                                <div class="col-md-4 col-12 mb-2">
+                                    <a href="@Url.Action("Users", "Admin")" class="btn btn-primary w-100">
+                                        <i class="fas fa-users"></i> Manage Users
+                                    </a>
+                                </div>
+                                <div class="col-md-4 col-12 mb-2">
+                                    <a href="@Url.Action("PointsRates", "Admin")" class="btn btn-success w-100">
+                                        <i class="fas fa-coins"></i> Points Rates
+                                    </a>
+                                </div>
+                                <div class="col-md-4 col-12 mb-2">
+                                    <a href="@Url.Action("Dashboard", "Admin")" class="btn btn-info w-100 text-white">
+                                        <i class="fas fa-chart-line"></i> Analytics
+                                    </a>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="col-md-6 col-12 mb-2">
+                                <a href="@Url.Action("UserLogin", "Account")" class="btn btn-primary w-100">
+                                    <i class="fas fa-sign-in-alt"></i> Login
                                 </a>
                             </div>
-                            <div class="col-md-4 col-12 mb-2">
-                                <a href="@Url.Action("PointsRates", "Admin")" class="btn btn-success w-100">
-                                    <i class="fas fa-coins"></i> Points Rates
-                                </a>
-                            </div>
-                            <div class="col-md-4 col-12 mb-2">
-                                <a href="@Url.Action("Dashboard", "Admin")" class="btn btn-info w-100 text-white">
-                                    <i class="fas fa-chart-line"></i> Analytics
+                            <div class="col-md-6 col-12 mb-2">
+                                <a href="@Url.Action("Register", "Account")" class="btn btn-success w-100">
+                                    <i class="fas fa-user-plus"></i> Register
                                 </a>
                             </div>
                         }
-                    }
-                    else
-                    {
-                        <div class="col-md-6 col-12 mb-2">
-                            <a href="@Url.Action("UserLogin", "Account")" class="btn btn-primary w-100">
-                                <i class="fas fa-sign-in-alt"></i> Login
-                            </a>
-                        </div>
-                        <div class="col-md-6 col-12 mb-2">
-                            <a href="@Url.Action("Register", "Account")" class="btn btn-success w-100">
-                                <i class="fas fa-user-plus"></i> Register
-                            </a>
-                        </div>
-                    }
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+</section>
 
-    <!-- About Section -->
-    <div class="row mt-4">
-        <div class="col-12">
-            <div class="card feature-card p-4">
-                <h4 class="text-center"><i class="fas fa-info-circle"></i> About BinIT2WinIT</h4>
-                <p class="text-center text-muted">
-                    BinIT2WinIT is a smart recycling rewards system that encourages recycling through gamification.
-                    Earn points, track your environmental impact, and compete with your community!
-                </p>
-                <div class="text-center">
-                    <p class="text-muted small">
-                        <i class="fas fa-users"></i> 3 Roles: Resident, Collection Officer, Administrator
-                        &nbsp;|&nbsp;
-                        <i class="fas fa-star"></i> Earn points for recycling
-                        &nbsp;|&nbsp;
-                        <i class="fas fa-share-alt"></i> Share referral codes
+<!-- ============================================================ -->
+<!-- ABOUT SECTION -->
+<!-- ============================================================ -->
+<section id="about" class="py-5" style="background-color: #f8f9fa;">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="card feature-card p-4">
+                    <h4 class="text-center"><i class="fas fa-info-circle"></i> About BinIT2WinIT</h4>
+                    <p class="text-center text-muted">
+                        BinIT2WinIT is a smart recycling rewards system that encourages recycling through gamification.
+                        Earn points, track your environmental impact, and compete with your community!
                     </p>
+                    <div class="text-center">
+                        <p class="text-muted small">
+                            <i class="fas fa-users"></i> 3 Roles: Resident, Collection Officer, Administrator
+                            &nbsp;|&nbsp;
+                            <i class="fas fa-star"></i> Earn points for recycling
+                            &nbsp;|&nbsp;
+                            <i class="fas fa-share-alt"></i> Share referral codes
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</main>
+</section>

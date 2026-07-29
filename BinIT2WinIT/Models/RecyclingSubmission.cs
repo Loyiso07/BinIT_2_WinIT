@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Web;
 
 namespace BinIT2WinIT.Models
 {
     public class RecyclingSubmission
-    { 
+    {
         [Key]
         public int SubmissionId { get; set; }
 
@@ -18,26 +15,23 @@ namespace BinIT2WinIT.Models
         [Required]
         public int MaterialTypeId { get; set; }
 
-        [Required]
-        public int DropOffPointId { get; set; }
+        public int? DropOffPointId { get; set; }  // ✅ MUST be nullable (int?)
 
         [Required]
-        [Range(0.1, 1000)]
         public double Weight { get; set; }
 
-        public DateTime SubmissionDate { get; set; } = DateTime.Now;
+        [Required]
+        public DateTime SubmissionDate { get; set; }
 
         [Required]
-        public string Status { get; set; } = "Pending";
+        [StringLength(20)]
+        public string Status { get; set; }
 
+        public DateTime? VerifiedDate { get; set; }
+        public int? VerifiedBy { get; set; }
         public string OfficerNotes { get; set; }
 
-        public int? VerifiedBy { get; set; }
-        public DateTime? VerifiedDate { get; set; }
-
-        public bool IsFlagged { get; set; } = false;
-        public string FlagReason { get; set; }
-
+        // Navigation properties
         [ForeignKey("ResidentId")]
         public virtual Resident Resident { get; set; }
 
@@ -46,9 +40,5 @@ namespace BinIT2WinIT.Models
 
         [ForeignKey("DropOffPointId")]
         public virtual DropOffPoint DropOffPoint { get; set; }
-
-        [ForeignKey("VerifiedBy")]
-        public virtual CollectionOfficer VerifyingOfficer { get; set; }
     }
- }
-
+}

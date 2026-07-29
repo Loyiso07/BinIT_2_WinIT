@@ -16,6 +16,13 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">
+            <i class="fas fa-exclamation-circle"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
 
     <div class="row">
         <div class="col-md-4">
@@ -29,7 +36,7 @@
         <div class="col-md-4">
             <div class="card bg-info text-white shadow">
                 <div class="card-body text-center">
-                    <h3>@Model.AvailableOptions?.Count ?? 0</h3>
+                    <h3>@(Model.RedemptionOptions?.Count ?? 0)</h3>
                     <p class="mb-0">Available Offers</p>
                 </div>
             </div>
@@ -37,7 +44,7 @@
         <div class="col-md-4">
             <div class="card bg-warning text-dark shadow">
                 <div class="card-body text-center">
-                    <a href="@Url.Action("RedeemHistory", "Resident")" class="text-dark">
+                    <a href="@Url.Action("RedemptionHistory", "Resident")" class="text-dark text-decoration-none">
                         <h3><i class="fas fa-history"></i></h3>
                         <p class="mb-0">View History</p>
                     </a>
@@ -53,7 +60,7 @@
                     <h5><i class="fas fa-exchange-alt"></i> Select Redemption Option</h5>
                 </div>
                 <div class="card-body">
-                    @if (Model.AvailableOptions != null && Model.AvailableOptions.Any())
+                    @if (Model.RedemptionOptions != null && Model.RedemptionOptions.Any())
                     {
                         using (Html.BeginForm("RedeemPoints", "Resident", FormMethod.Post, new { role = "form" }))
                         {
@@ -63,7 +70,7 @@
                             <div class="form-group mb-3">
                                 @Html.LabelFor(m => m.SelectedOptionId, "Select Offer", new { @class = "form-label fw-bold" })
                                 @Html.DropDownListFor(m => m.SelectedOptionId,
-                                    new SelectList(Model.AvailableOptions, "OptionId", "Description"),
+                                    new SelectList(Model.RedemptionOptions, "OptionId", "Description"),
                                     "-- Select an offer --",
                                     new { @class = "form-control" })
                                 @Html.ValidationMessageFor(m => m.SelectedOptionId, "", new { @class = "text-danger" })
@@ -71,9 +78,15 @@
 
                             <div class="form-group mb-3">
                                 @Html.LabelFor(m => m.UtilityAccountNumber, "Municipal Utility Account Number", new { @class = "form-label fw-bold" })
-                                @Html.TextBoxFor(m => m.UtilityAccountNumber, new { @class = "form-control", placeholder = "Enter your utility account number" })
+                                @Html.TextBoxFor(m => m.UtilityAccountNumber, new
+                                {
+                                    @class = "form-control",
+                                    placeholder = "Enter your 11-digit utility account number",
+                                    maxlength = "11",
+                                    pattern = "[0-9]*"
+                                })
                                 @Html.ValidationMessageFor(m => m.UtilityAccountNumber, "", new { @class = "text-danger" })
-                                <small class="text-muted">This is the account number on your municipal bill.</small>
+                                <small class="text-muted">Enter exactly 11 digits (numbers only). This is the account number on your municipal bill.</small>
                             </div>
 
                             <div id="selectedOfferDetails" class="alert alert-info" style="display:none;">
@@ -81,7 +94,7 @@
                                 <p id="offerDetails"></p>
                             </div>
 
-                            <button type="submit" class="btn btn-success w-100">
+                            <button type="submit" class="btn btn-success w-100" id="redeemButton">
                                 <i class="fas fa-check-circle"></i> Redeem Points
                             </button>
                         }
@@ -111,6 +124,17 @@
                     <p class="text-muted"><strong>Note:</strong> Redemption is subject to approval by the municipality.</p>
                 </div>
             </div>
+
+            <div class="card shadow mt-3">
+                <div class="card-header bg-dark text-white">
+                    <h6><i class="fas fa-bolt"></i> Quick Actions</h6>
+                </div>
+                <div class="card-body">
+                    <a href="@Url.Action("Dashboard", "Resident")" class="btn btn-outline-secondary w-100">
+                        <i class="fas fa-arrow-left"></i> Back to Dashboard
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -119,14 +143,23 @@
     @Scripts.Render("~/bundles/jqueryval")
     <script>
         $(document).ready(function () {
+            // ✅ FIX: Create safe options array without circular references
+            var options = @Html.Raw(Json.Encode(Model.RedemptionOptions?.Select(o => new {
+                OptionId = o.OptionId,
+                UtilityType = o.UtilityType,
+                Description = o.Description,
+                PointsRequired = o.PointsRequired,
+                DiscountAmount = o.DiscountAmount
+            }) ?? Enumerable.Empty<object>()));
+
+            // Show offer details when selection changes
             $('#SelectedOptionId').on('change', function () {
-                var selectedId = $(this).val();
+                var selectedId = parseInt($(this).val());
                 if (selectedId) {
-                    var options = @Html.Raw(Json.Encode(Model.AvailableOptions));
-                    var selected = options.find(o => o.OptionId == selectedId);
+                    var selected = options.find(o => o.OptionId === selectedId);
                     if (selected) {
-                        $('#offerDetails').text(
-                            selected.UtilityType + ' - ' +
+                        $('#offerDetails').html(
+                            '<strong>' + selected.UtilityType + '</strong> - ' +
                             'R' + selected.DiscountAmount + ' off for ' +
                             selected.PointsRequired + ' points'
                         );
@@ -135,6 +168,40 @@
                 } else {
                     $('#selectedOfferDetails').hide();
                 }
+            });
+
+            // ✅ Validate account number - only numbers, exactly 11 digits
+            $('#UtilityAccountNumber').on('input', function() {
+                this.value = this.value.replace(/[^0-9]/g, '');
+
+                if (this.value.length === 11) {
+                    $(this).removeClass('is-invalid').addClass('is-valid');
+                } else if (this.value.length > 0) {
+                    $(this).removeClass('is-valid').addClass('is-invalid');
+                } else {
+                    $(this).removeClass('is-valid is-invalid');
+                }
+            });
+
+            $('#UtilityAccountNumber').on('blur', function() {
+                if (this.value.length > 0 && this.value.length !== 11) {
+                    $(this).addClass('is-invalid');
+                    $(this).removeClass('is-valid');
+                } else if (this.value.length === 11) {
+                    $(this).removeClass('is-invalid').addClass('is-valid');
+                }
+            });
+
+            // ✅ Validate form before submit
+            $('form').on('submit', function(e) {
+                var accountNumber = $('#UtilityAccountNumber').val();
+                if (accountNumber.length !== 11) {
+                    e.preventDefault();
+                    alert('Please enter exactly 11 digits for your utility account number.');
+                    $('#UtilityAccountNumber').focus().addClass('is-invalid');
+                    return false;
+                }
+                return true;
             });
         });
     </script>

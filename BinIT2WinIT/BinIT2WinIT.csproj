@@ -225,6 +225,14 @@
     <Compile Include="Migrations\202607291242546_FixDecimalPrecision.Designer.cs">
       <DependentUpon>202607291242546_FixDecimalPrecision.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202607291543542_UpdateDatabaseSchema.cs" />
+    <Compile Include="Migrations\202607291543542_UpdateDatabaseSchema.Designer.cs">
+      <DependentUpon>202607291543542_UpdateDatabaseSchema.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202607291626306_first1.cs" />
+    <Compile Include="Migrations\202607291626306_first1.Designer.cs">
+      <DependentUpon>202607291626306_first1.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\AdminCreationAudit.cs" />
@@ -282,6 +290,7 @@
     <Content Include="Content\bootstrap.rtl.css" />
     <Content Include="Content\bootstrap.rtl.min.css" />
     <Content Include="Content\dark-mode.css" />
+    <Content Include="Content\recycling-hero.jpg" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
@@ -443,6 +452,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202607291242546_FixDecimalPrecision.resx">
       <DependentUpon>202607291242546_FixDecimalPrecision.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202607291543542_UpdateDatabaseSchema.resx">
+      <DependentUpon>202607291543542_UpdateDatabaseSchema.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202607291626306_first1.resx">
+      <DependentUpon>202607291626306_first1.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

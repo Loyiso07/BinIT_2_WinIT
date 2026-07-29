@@ -12,7 +12,9 @@ namespace BinIT2WinIT.Models
         public string ResidentName { get; set; }
         public int PointsBalance { get; set; }
 
-        public List<RedemptionOption> AvailableOptions { get; set; }
+        // ✅ FIXED: Renamed from 'AvailableOptions' to 'RedemptionOptions' 
+        // to match the HTML in your RedeemPoints.cshtml view.
+        public List<RedemptionOption> RedemptionOptions { get; set; }
 
         [Required]
         public int SelectedOptionId { get; set; }
