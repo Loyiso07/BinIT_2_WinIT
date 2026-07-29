@@ -31,7 +31,7 @@
 
     <!-- Stats Cards -->
     <div class="row mt-4">
-        <div class="col-md-4">
+        <div class="col-md-3 col-sm-6 mb-3">
             <div class="card bg-success text-white shadow">
                 <div class="card-body text-center">
                     <i class="fas fa-star fa-2x mb-2"></i>
@@ -40,7 +40,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3 col-sm-6 mb-3">
             <div class="card bg-info text-white shadow">
                 <div class="card-body text-center">
                     <i class="fas fa-users fa-2x mb-2"></i>
@@ -49,12 +49,21 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3 col-sm-6 mb-3">
             <div class="card bg-warning text-dark shadow">
                 <div class="card-body text-center">
                     <i class="fas fa-leaf fa-2x mb-2"></i>
                     <h3>@Model.TotalCO2Saved.ToString("0.0") kg</h3>
                     <p class="mb-0">CO2 Saved</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card bg-danger text-white shadow">
+                <div class="card-body text-center">
+                    <i class="fas fa-gift fa-2x mb-2"></i>
+                    <h3>@ViewBag.PendingRedemptions</h3>
+                    <p class="mb-0">Pending Redemptions</p>
                 </div>
             </div>
         </div>
@@ -125,6 +134,77 @@
         </div>
     </div>
 
+    <!-- Quick Actions - Row 1: Main Actions -->
+    <div class="row mt-4">
+        <div class="col-md-4 col-sm-6 mb-3">
+            <div class="card h-100 shadow">
+                <div class="card-body text-center">
+                    <i class="fas fa-recycle fa-3x text-success"></i>
+                    <h5 class="mt-3">Submit Recycling</h5>
+                    <p class="text-muted">Log your recycling activity and earn points</p>
+                    @Html.ActionLink("Submit Now", "SubmitRecycling", "Resident", null, new { @class = "btn btn-success" })
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 col-sm-6 mb-3">
+            <div class="card h-100 shadow">
+                <div class="card-body text-center">
+                    <i class="fas fa-gift fa-3x text-warning"></i>
+                    <h5 class="mt-3">Redeem Points</h5>
+                    <p class="text-muted">Convert your points to utility discounts</p>
+                    @Html.ActionLink("Redeem Now", "RedeemPoints", "Resident", null, new { @class = "btn btn-warning" })
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 col-sm-6 mb-3">
+            <div class="card h-100 shadow">
+                <div class="card-body text-center">
+                    <i class="fas fa-history fa-3x text-primary"></i>
+                    <h5 class="mt-3">Points History</h5>
+                    <p class="text-muted">View all your points transactions</p>
+                    @Html.ActionLink("View History", "PointsHistory", "Resident", null, new { @class = "btn btn-primary" })
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions - Row 2: Social & Community -->
+    <div class="row mt-4">
+        <div class="col-md-4 col-sm-6 mb-3">
+            <div class="card h-100 shadow">
+                <div class="card-body text-center">
+                    <i class="fas fa-share-alt fa-3x text-warning"></i>
+                    <h5 class="mt-3">Referral Code</h5>
+                    <p class="text-muted">Share to earn influencer points!</p>
+                    <div class="bg-light p-2 rounded mb-2">
+                        <strong><code>@Model.ReferralCode</code></strong>
+                    </div>
+                    @Html.ActionLink("View Details", "InfluencerPoints", "Resident", null, new { @class = "btn btn-warning" })
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 col-sm-6 mb-3">
+            <div class="card h-100 shadow">
+                <div class="card-body text-center">
+                    <i class="fas fa-trophy fa-3x text-warning"></i>
+                    <h5 class="mt-3">Leaderboard</h5>
+                    <p class="text-muted">See how you compare to other recyclers</p>
+                    @Html.ActionLink("View Leaderboard", "Leaderboard", "Resident", null, new { @class = "btn btn-warning" })
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 col-sm-6 mb-3">
+            <div class="card h-100 shadow">
+                <div class="card-body text-center">
+                    <i class="fas fa-user-edit fa-3x text-info"></i>
+                    <h5 class="mt-3">Edit Profile</h5>
+                    <p class="text-muted">Update your personal information</p>
+                    @Html.ActionLink("Edit Profile", "EditProfile", "Resident", null, new { @class = "btn btn-info" })
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Announcements / Rewards Section -->
     <div class="row mt-4">
         <div class="col-12">
@@ -170,58 +250,6 @@
                     {
                         <p class="text-muted">No announcements at this time. Check back later for rewards and updates!</p>
                     }
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Action Cards -->
-    <div class="row mt-4">
-        <div class="col-md-4">
-            <div class="card h-100 shadow">
-                <div class="card-body text-center">
-                    <i class="fas fa-recycle fa-3x text-success"></i>
-                    <h5 class="mt-3">Submit Recycling</h5>
-                    <p class="text-muted">Log your recycling activity and earn points</p>
-                    @Html.ActionLink("Submit Now", "SubmitRecycling", "Resident", null, new { @class = "btn btn-success" })
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card h-100 shadow">
-                <div class="card-body text-center">
-                    <i class="fas fa-history fa-3x text-primary"></i>
-                    <h5 class="mt-3">Points History</h5>
-                    <p class="text-muted">View all your points transactions</p>
-                    @Html.ActionLink("View History", "PointsHistory", "Resident", null, new { @class = "btn btn-primary" })
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card h-100 shadow">
-                <div class="card-body text-center">
-                    <i class="fas fa-share-alt fa-3x text-warning"></i>
-                    <h5 class="mt-3">Referral Code</h5>
-                    <p class="text-muted">Share to earn influencer points!</p>
-                    <div class="bg-light p-2 rounded">
-                        <strong><code>@Model.ReferralCode</code></strong>
-                    </div>
-                    @Html.ActionLink("View Details", "InfluencerPoints", "Resident", null, new { @class = "btn btn-warning mt-2" })
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Leaderboard Section -->
-    <div class="row mt-4">
-        <div class="col-12">
-            <div class="card shadow">
-                <div class="card-header bg-dark text-white">
-                    <i class="fas fa-trophy"></i> Community Leaderboard
-                </div>
-                <div class="card-body">
-                    <p>See how you compare to other recyclers in your community.</p>
-                    @Html.ActionLink("View Full Leaderboard", "Leaderboard", "Resident", null, new { @class = "btn btn-outline-success" })
                 </div>
             </div>
         </div>
@@ -273,13 +301,71 @@
             </div>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-body text-center">
-                <i class="fas fa-gift fa-3x text-success"></i>
-                <h5 class="mt-2">Redeem Points</h5>
-                <p>Convert your points to utility discounts</p>
-                @Html.ActionLink("Redeem Now", "RedeemPoints", "Resident", null, new { @class = "btn btn-success" })
+
+    <!-- Redemption Stats -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <i class="fas fa-check-circle"></i> Redemption Stats
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <h4>@ViewBag.ApprovedRedemptions</h4>
+                            <p class="text-muted">Approved</p>
+                        </div>
+                        <div class="col-6">
+                            <h4>@ViewBag.PendingRedemptions</h4>
+                            <p class="text-muted">Pending</p>
+                        </div>
+                    </div>
+                    <div class="text-center mt-2">
+                        @Html.ActionLink("View Redemption History", "RedemptionHistory", "Resident", null, new { @class = "btn btn-outline-success btn-sm" })
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-dark text-white">
+                    <i class="fas fa-bolt"></i> Quick Tips
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="fas fa-check-circle text-success"></i>
+                            Recycle regularly to earn more points
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check-circle text-success"></i>
+                            Share your referral code to earn influencer points
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check-circle text-success"></i>
+                            Check announcements for special rewards
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check-circle text-success"></i>
+                            Redeem points for utility discounts
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-body text-center text-muted">
+                    <small>
+                        <i class="fas fa-info-circle"></i>
+                        BinIT2WinIT - Smart Recycling Rewards System
+                        &nbsp;|&nbsp; Version 2.0
+                    </small>
+                </div>
             </div>
         </div>
     </div>

@@ -36,7 +36,7 @@
         <div class="col-md-4">
             <div class="card bg-info text-white shadow">
                 <div class="card-body text-center">
-                    <h3>@(Model.RedemptionOptions?.Count ?? 0)</h3>
+                    <h3>@(Model.RedemptionOptions?.Where(o => o.PointsRequired <= Model.PointsBalance).Count() ?? 0)</h3>
                     <p class="mb-0">Available Offers</p>
                 </div>
             </div>
@@ -62,6 +62,17 @@
                 <div class="card-body">
                     @if (Model.RedemptionOptions != null && Model.RedemptionOptions.Any())
                     {
+                        // ✅ Filter options based on user's points
+                        var availableOptions = Model.RedemptionOptions
+                            .Where(o => o.PointsRequired <= Model.PointsBalance)
+                            .OrderBy(o => o.PointsRequired)
+                            .ToList();
+
+                        var unavailableOptions = Model.RedemptionOptions
+                            .Where(o => o.PointsRequired > Model.PointsBalance)
+                            .OrderBy(o => o.PointsRequired)
+                            .ToList();
+
                         using (Html.BeginForm("RedeemPoints", "Resident", FormMethod.Post, new { role = "form" }))
                         {
                             @Html.AntiForgeryToken()
@@ -69,10 +80,40 @@
 
                             <div class="form-group mb-3">
                                 @Html.LabelFor(m => m.SelectedOptionId, "Select Offer", new { @class = "form-label fw-bold" })
-                                @Html.DropDownListFor(m => m.SelectedOptionId,
-                                    new SelectList(Model.RedemptionOptions, "OptionId", "Description"),
-                                    "-- Select an offer --",
-                                    new { @class = "form-control" })
+
+                                @if (availableOptions.Any())
+                                {
+                                    <select name="SelectedOptionId" class="form-control" required>
+                                        <option value="">-- Select an offer --</option>
+                                        @foreach (var option in availableOptions)
+                                        {
+                                            <option value="@option.OptionId">
+                                                @option.UtilityType - @option.Description
+                                                (@option.PointsRequired pts) ✅ Available
+                                            </option>
+                                        }
+                                        @if (unavailableOptions.Any())
+                                        {
+                                            <optgroup label="-- Unavailable (need more points) --">
+                                                @foreach (var option in unavailableOptions)
+                                                {
+                                                    <option value="@option.OptionId" disabled>
+                                                        @option.UtilityType - @option.Description
+                                                        (@option.PointsRequired pts) ❌ Need @((option.PointsRequired - Model.PointsBalance)) more pts
+                                                    </option>
+                                                }
+                                            </optgroup>
+                                        }
+                                    </select>
+                                }
+                                else
+                                {
+                                    <div class="alert alert-warning">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                        You don't have enough points to redeem any offers.
+                                        Keep recycling to earn more points!
+                                    </div>
+                                }
                                 @Html.ValidationMessageFor(m => m.SelectedOptionId, "", new { @class = "text-danger" })
                             </div>
 
@@ -94,9 +135,18 @@
                                 <p id="offerDetails"></p>
                             </div>
 
-                            <button type="submit" class="btn btn-success w-100" id="redeemButton">
+                            <button type="submit" class="btn btn-success w-100" id="redeemButton" @(!availableOptions.Any() ? "disabled" : "")>
                                 <i class="fas fa-check-circle"></i> Redeem Points
                             </button>
+
+                            if (!availableOptions.Any())
+                            {
+                                <div class="alert alert-warning mt-3">
+                                    <i class="fas fa-info-circle"></i>
+                                    You need to earn more points to redeem rewards.
+                                    <a href="@Url.Action("SubmitRecycling", "Resident")" class="alert-link">Submit recycling now!</a>
+                                </div>
+                            }
                         }
                     }
                     else
@@ -127,11 +177,48 @@
 
             <div class="card shadow mt-3">
                 <div class="card-header bg-dark text-white">
+                    <h6><i class="fas fa-chart-line"></i> Your Points Status</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <span>Available Points:</span>
+                        <strong>@Model.PointsBalance</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mt-2">
+                        <span>Affordable Offers:</span>
+                        <strong>@(Model.RedemptionOptions?.Where(o => o.PointsRequired <= Model.PointsBalance).Count() ?? 0)</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mt-2">
+                        <span>Total Offers:</span>
+                        <strong>@(Model.RedemptionOptions?.Count ?? 0)</strong>
+                    </div>
+                    @if (Model.RedemptionOptions != null && Model.RedemptionOptions.Any())
+                    {
+                        var cheapest = Model.RedemptionOptions.OrderBy(o => o.PointsRequired).FirstOrDefault();
+                        var mostExpensive = Model.RedemptionOptions.OrderByDescending(o => o.PointsRequired).FirstOrDefault();
+                        <hr />
+                        <div class="d-flex justify-content-between">
+                            <span>Cheapest Offer:</span>
+                            <strong>@(cheapest?.PointsRequired ?? 0) pts</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mt-1">
+                            <span>Most Expensive:</span>
+                            <strong>@(mostExpensive?.PointsRequired ?? 0) pts</strong>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="card shadow mt-3">
+                <div class="card-header bg-secondary text-white">
                     <h6><i class="fas fa-bolt"></i> Quick Actions</h6>
                 </div>
                 <div class="card-body">
                     <a href="@Url.Action("Dashboard", "Resident")" class="btn btn-outline-secondary w-100">
                         <i class="fas fa-arrow-left"></i> Back to Dashboard
+                    </a>
+                    <a href="@Url.Action("SubmitRecycling", "Resident")" class="btn btn-outline-success w-100 mt-2">
+                        <i class="fas fa-recycle"></i> Earn More Points
                     </a>
                 </div>
             </div>
@@ -143,7 +230,7 @@
     @Scripts.Render("~/bundles/jqueryval")
     <script>
         $(document).ready(function () {
-            // ✅ FIX: Create safe options array without circular references
+            // ✅ Create safe options array without circular references
             var options = @Html.Raw(Json.Encode(Model.RedemptionOptions?.Select(o => new {
                 OptionId = o.OptionId,
                 UtilityType = o.UtilityType,
