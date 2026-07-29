@@ -41,8 +41,7 @@ namespace BinIT2WinIT.Controllers
         {
             get
             {
-                // ✅ FIXED: Use System.Web.HttpContext.Current
-                return _signInManager ?? System.Web.HttpContext.Current.GetOwinContext().Get<ApplicationSignInManager>();
+                return _signInManager ?? HttpContext.GetOwinContext().Get<ApplicationSignInManager>();
             }
             private set
             {
@@ -54,8 +53,7 @@ namespace BinIT2WinIT.Controllers
         {
             get
             {
-                // ✅ FIXED: Use System.Web.HttpContext.Current
-                return _userManager ?? System.Web.HttpContext.Current.GetOwinContext().GetUserManager<ApplicationUserManager>();
+                return _userManager ?? HttpContext.GetOwinContext().GetUserManager<ApplicationUserManager>();
             }
             private set
             {
@@ -67,8 +65,7 @@ namespace BinIT2WinIT.Controllers
         {
             get
             {
-                // ✅ FIXED: Use System.Web.HttpContext.Current
-                return _roleManager ?? System.Web.HttpContext.Current.GetOwinContext().Get<ApplicationRoleManager>();
+                return _roleManager ?? HttpContext.GetOwinContext().Get<ApplicationRoleManager>();
             }
             private set
             {
@@ -78,8 +75,7 @@ namespace BinIT2WinIT.Controllers
 
         private IAuthenticationManager AuthenticationManager
         {
-            // ✅ FIXED: Use System.Web.HttpContext.Current
-            get { return System.Web.HttpContext.Current.GetOwinContext().Authentication; }
+            get { return HttpContext.GetOwinContext().Authentication; }
         }
 
         // ============================================================
@@ -291,7 +287,7 @@ namespace BinIT2WinIT.Controllers
 
                     if (result.Succeeded)
                     {
-                        // ✅ ENSURE ROLES EXIST
+                        // Ensure roles exist
                         if (!await RoleManager.RoleExistsAsync("Administrator"))
                         {
                             await RoleManager.CreateAsync(new IdentityRole("Administrator"));
@@ -330,7 +326,7 @@ namespace BinIT2WinIT.Controllers
                         _context.Residents.Add(resident);
                         await _context.SaveChangesAsync();
 
-                        // ✅ PROCESS REFERRAL CODE
+                        // Process referral code
                         if (!string.IsNullOrEmpty(model.ReferralCode))
                         {
                             var referrer = _context.Residents
@@ -376,7 +372,7 @@ namespace BinIT2WinIT.Controllers
                 }
             }
 
-            // ✅ RELOAD COMMUNITIES IF REGISTRATION FAILS
+            // Reload communities if registration fails
             var communities = _context.DropOffPoints
                 .Where(d => d.IsActive)
                 .OrderBy(d => d.Name)

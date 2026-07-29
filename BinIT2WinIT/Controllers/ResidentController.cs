@@ -84,7 +84,7 @@ namespace BinIT2WinIT.Controllers
                 .ToListAsync();
 
             ViewBag.Notifications = notifications;
-            ViewBag.UnreadCount = notifications.Count;
+            ViewBag.UnreadCount = notifications.Count();
 
             return View(resident);
         }
