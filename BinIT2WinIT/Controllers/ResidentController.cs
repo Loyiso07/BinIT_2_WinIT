@@ -4,7 +4,9 @@ using BinIT2WinIT.Services;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using System;
+using System.Collections.Generic;
 using System.Data.Entity;
+using System.Data.Entity.Validation;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
@@ -58,16 +60,31 @@ namespace BinIT2WinIT.Controllers
                 resident = new Resident
                 {
                     UserId = userId,
-                    FullName = user.FullName ?? user.UserName,
-                    PhoneNumber = user.PhoneNumber ?? "",
+                    FullName = user.FullName ?? user.UserName ?? "Resident",
+                    PhoneNumber = user.PhoneNumber ?? "Not Provided",
                     CreatedAt = DateTime.Now,
                     IsActive = true,
-                    ReferralCode = GenerateReferralCode()
+                    ReferralCode = GenerateReferralCode(),
+                    PointsBalance = 0,
+                    Address = string.Empty,
+                    Suburb = string.Empty,
+                    City = string.Empty,
+                    Province = string.Empty,
+                    PostalCode = string.Empty
                 };
-                _context.Residents.Add(resident);
-                await _context.SaveChangesAsync();
 
-                await AwardWelcomeBonus(resident.ResidentId);
+                _context.Residents.Add(resident);
+
+                try
+                {
+                    await _context.SaveChangesAsync();
+                    await AwardWelcomeBonus(resident.ResidentId);
+                }
+                catch (DbEntityValidationException ex)
+                {
+                    var errorMessage = GetValidationErrors(ex);
+                    throw new Exception($"Validation failed while creating resident: {errorMessage}", ex);
+                }
             }
 
             // Load announcements for resident
@@ -333,11 +350,11 @@ namespace BinIT2WinIT.Controllers
 
                 resident.FullName = model.FullName;
                 resident.PhoneNumber = model.PhoneNumber;
-                resident.Address = model.Address;
-                resident.Suburb = model.Suburb;
-                resident.City = model.City;
-                resident.Province = model.Province;
-                resident.PostalCode = model.PostalCode;
+                resident.Address = model.Address ?? string.Empty;
+                resident.Suburb = model.Suburb ?? string.Empty;
+                resident.City = model.City ?? string.Empty;
+                resident.Province = model.Province ?? string.Empty;
+                resident.PostalCode = model.PostalCode ?? string.Empty;
                 resident.DropOffPointId = model.DropOffPointId;
 
                 await _context.SaveChangesAsync();
@@ -511,70 +528,78 @@ namespace BinIT2WinIT.Controllers
                 return View(model);
             }
 
-            // Create redemption request
-            var request = new RedemptionRequest
-            {
-                ResidentId = resident.ResidentId,
-                OptionId = selectedOption.OptionId,
-                PointsUsed = selectedOption.PointsRequired,
-                DiscountAmount = selectedOption.DiscountAmount,
-                UtilityType = selectedOption.UtilityType,
-                RequestStatus = "Pending",
-                RequestDate = DateTime.Now,
-                ReferenceNumber = GenerateReferenceNumber(),
-                UtilityAccountNumber = model.UtilityAccountNumber
-            };
-
-            _context.RedemptionRequests.Add(request);
-
-            // Deduct points immediately
-            resident.PointsBalance -= selectedOption.PointsRequired;
-
-            // Create points transaction for redemption
-            var transaction = new PointsTransaction
-            {
-                ResidentId = resident.ResidentId,
-                Amount = -selectedOption.PointsRequired,
-                Description = $"Redeemed {selectedOption.PointsRequired} points for {selectedOption.UtilityType} discount (R{selectedOption.DiscountAmount})",
-                Type = "Redeem",
-                TransactionDate = DateTime.Now,
-                ReferenceId = request.RequestId,
-                Reason = "Utility discount redemption"
-            };
-            _context.PointsTransactions.Add(transaction);
-
-            await _context.SaveChangesAsync();
-
-            // ✅ FIXED: Safe notification service call with null checks and fallback
             try
             {
-                var notificationService = NotificationService;
-                if (notificationService != null && !string.IsNullOrEmpty(request.ReferenceNumber))
+                // Create redemption request
+                var request = new RedemptionRequest
                 {
-                    await notificationService.SendNotification(
-                        userId,
-                        "Redemption Request Submitted",
-                        $"Your request to redeem {selectedOption.PointsRequired} points for a R{selectedOption.DiscountAmount} {selectedOption.UtilityType} discount has been submitted. Reference: {request.ReferenceNumber}",
-                        "Redemption",
-                        request.ReferenceNumber
-                    );
-                }
-                else
+                    ResidentId = resident.ResidentId,
+                    OptionId = selectedOption.OptionId,
+                    PointsUsed = selectedOption.PointsRequired,
+                    DiscountAmount = selectedOption.DiscountAmount,
+                    UtilityType = selectedOption.UtilityType,
+                    RequestStatus = "Pending",
+                    RequestDate = DateTime.Now,
+                    ReferenceNumber = GenerateReferenceNumber(),
+                    UtilityAccountNumber = model.UtilityAccountNumber
+                };
+
+                _context.RedemptionRequests.Add(request);
+
+                // Deduct points immediately
+                resident.PointsBalance -= selectedOption.PointsRequired;
+
+                // Create points transaction for redemption
+                var transaction = new PointsTransaction
                 {
-                    // Log to debug output if service is missing (won't crash app)
-                    System.Diagnostics.Debug.WriteLine($"NotificationService is null or ReferenceNumber is empty. Notification skipped for User: {userId}");
+                    ResidentId = resident.ResidentId,
+                    Amount = -selectedOption.PointsRequired,
+                    Description = $"Redeemed {selectedOption.PointsRequired} points for {selectedOption.UtilityType} discount (R{selectedOption.DiscountAmount})",
+                    Type = "Redeem",
+                    TransactionDate = DateTime.Now,
+                    ReferenceId = request.RequestId,
+                    Reason = "Utility discount redemption"
+                };
+                _context.PointsTransactions.Add(transaction);
+
+                await _context.SaveChangesAsync();
+
+                // Send notification
+                try
+                {
+                    var notificationService = NotificationService;
+                    if (notificationService != null && !string.IsNullOrEmpty(request.ReferenceNumber))
+                    {
+                        await notificationService.SendNotification(
+                            userId,
+                            "Redemption Request Submitted",
+                            $"Your request to redeem {selectedOption.PointsRequired} points for a R{selectedOption.DiscountAmount} {selectedOption.UtilityType} discount has been submitted. Reference: {request.ReferenceNumber}",
+                            "Redemption",
+                            request.ReferenceNumber
+                        );
+                    }
                 }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Notification failed: {ex.Message}");
+                }
+
+                TempData["SuccessMessage"] = $"✅ Successfully redeemed {selectedOption.PointsRequired} points for R{selectedOption.DiscountAmount} {selectedOption.UtilityType} discount! Reference: {request.ReferenceNumber}";
+                TempData["ReferenceNumber"] = request.ReferenceNumber;
+
+                return RedirectToAction("RedeemConfirmation", new { id = request.RequestId });
             }
-            catch (Exception ex)
+            catch (DbEntityValidationException ex)
             {
-                // Log error but don't break the flow
-                System.Diagnostics.Debug.WriteLine($"Notification failed: {ex.Message}");
+                var errorMessage = GetValidationErrors(ex);
+                ModelState.AddModelError("", $"Validation failed: {errorMessage}");
+
+                model.PointsBalance = resident.PointsBalance;
+                model.RedemptionOptions = await _context.RedemptionOptions
+                    .Where(o => o.IsActive)
+                    .ToListAsync();
+                return View(model);
             }
-
-            TempData["SuccessMessage"] = $"✅ Successfully redeemed {selectedOption.PointsRequired} points for R{selectedOption.DiscountAmount} {selectedOption.UtilityType} discount! Reference: {request.ReferenceNumber}";
-            TempData["ReferenceNumber"] = request.ReferenceNumber;
-
-            return RedirectToAction("RedeemConfirmation", new { id = request.RequestId });
         }
 
         // ============================================================
@@ -604,33 +629,68 @@ namespace BinIT2WinIT.Controllers
         }
 
         // ============================================================
-        // GET: Resident/RedeemHistory
+        // GET: Resident/RedeemHistory (kept for backward compatibility)
         // ============================================================
         public async Task<ActionResult> RedeemHistory()
         {
-            var userId = User.Identity.GetUserId();
-            var resident = await _context.Residents
-                .FirstOrDefaultAsync(r => r.UserId == userId);
+            return await RedemptionHistory();
+        }
 
-            if (resident == null)
+        // ============================================================
+        // GET: Resident/RedemptionHistory (main action)
+        // ============================================================
+        public async Task<ActionResult> RedemptionHistory()
+        {
+            try
             {
-                return RedirectToAction("Login", "Account");
+                var userId = User.Identity.GetUserId();
+
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return RedirectToAction("Login", "Account");
+                }
+
+                var resident = await _context.Residents
+                    .FirstOrDefaultAsync(r => r.UserId == userId);
+
+                if (resident == null)
+                {
+                    return RedirectToAction("Login", "Account");
+                }
+
+                var requests = await _context.RedemptionRequests
+                    .Include(r => r.RedemptionOption)
+                    .Where(r => r.ResidentId == resident.ResidentId)
+                    .OrderByDescending(r => r.RequestDate)
+                    .ToListAsync();
+
+                // Create view model with data
+                var viewModel = new RedemptionHistoryViewModel
+                {
+                    Requests = requests ?? new List<RedemptionRequest>(),
+                    TotalPointsRedeemed = requests?.Sum(r => r.PointsUsed) ?? 0,
+                    TotalDiscountsReceived = requests?
+                        .Where(r => r.RequestStatus == "Approved" || r.RequestStatus == "Applied")
+                        .Sum(r => r.DiscountAmount) ?? 0m
+                };
+
+                return View(viewModel);
             }
-
-            var requests = await _context.RedemptionRequests
-                .Include(r => r.RedemptionOption)
-                .Where(r => r.ResidentId == resident.ResidentId)
-                .OrderByDescending(r => r.RequestDate)
-                .ToListAsync();
-
-            var viewModel = new RedemptionHistoryViewModel
+            catch (Exception ex)
             {
-                Requests = requests,
-                TotalPointsRedeemed = requests.Sum(r => r.PointsUsed),
-                TotalDiscountsReceived = requests.Where(r => r.RequestStatus == "Approved" || r.RequestStatus == "Applied").Sum(r => r.DiscountAmount)
-            };
+                // Log error
+                System.Diagnostics.Debug.WriteLine($"Error in RedemptionHistory: {ex.Message}");
 
-            return View(viewModel);
+                // Return empty model on error
+                var viewModel = new RedemptionHistoryViewModel
+                {
+                    Requests = new List<RedemptionRequest>(),
+                    TotalPointsRedeemed = 0,
+                    TotalDiscountsReceived = 0m
+                };
+
+                return View(viewModel);
+            }
         }
 
         // ============================================================
@@ -663,30 +723,53 @@ namespace BinIT2WinIT.Controllers
 
         private async Task AwardWelcomeBonus(int residentId)
         {
-            var config = await _context.SystemConfigurations
-                .FirstOrDefaultAsync(c => c.ConfigKey == "WelcomeBonusPoints");
-
-            var bonusPoints = config != null ? int.Parse(config.ConfigValue) : 100;
-
-            var transaction = new PointsTransaction
+            try
             {
-                ResidentId = residentId,
-                Amount = bonusPoints,
-                Description = "Welcome Bonus - Thank you for joining!",
-                Type = "WelcomeBonus",
-                TransactionDate = DateTime.Now
-            };
+                var config = await _context.SystemConfigurations
+                    .FirstOrDefaultAsync(c => c.ConfigKey == "WelcomeBonusPoints");
 
-            _context.PointsTransactions.Add(transaction);
+                var bonusPoints = config != null ? int.Parse(config.ConfigValue) : 100;
 
-            var resident = await _context.Residents.FirstOrDefaultAsync(r => r.ResidentId == residentId);
+                var transaction = new PointsTransaction
+                {
+                    ResidentId = residentId,
+                    Amount = bonusPoints,
+                    Description = "Welcome Bonus - Thank you for joining!",
+                    Type = "WelcomeBonus",
+                    TransactionDate = DateTime.Now,
+                    Reason = "New resident welcome bonus",
+                    ReferenceId = null
+                };
 
-            if (resident != null)
-            {
-                resident.PointsBalance += bonusPoints;
+                _context.PointsTransactions.Add(transaction);
+
+                var resident = await _context.Residents.FirstOrDefaultAsync(r => r.ResidentId == residentId);
+
+                if (resident != null)
+                {
+                    resident.PointsBalance += bonusPoints;
+                }
+
+                await _context.SaveChangesAsync();
             }
+            catch (DbEntityValidationException ex)
+            {
+                var errorMessage = GetValidationErrors(ex);
+                throw new Exception($"Welcome bonus validation failed: {errorMessage}", ex);
+            }
+        }
 
-            await _context.SaveChangesAsync();
+        private string GetValidationErrors(DbEntityValidationException ex)
+        {
+            var errors = new List<string>();
+            foreach (var validationErrors in ex.EntityValidationErrors)
+            {
+                foreach (var validationError in validationErrors.ValidationErrors)
+                {
+                    errors.Add($"Property: {validationError.PropertyName} Error: {validationError.ErrorMessage}");
+                }
+            }
+            return string.Join("; ", errors);
         }
 
         protected override void Dispose(bool disposing)

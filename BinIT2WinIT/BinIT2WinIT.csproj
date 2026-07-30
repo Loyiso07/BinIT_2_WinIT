@@ -169,69 +169,9 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202607181514476_first.cs" />
-    <Compile Include="Migrations\202607181514476_first.Designer.cs">
-      <DependentUpon>202607181514476_first.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\202607191336497_InitialCreate.cs" />
-    <Compile Include="Migrations\202607191336497_InitialCreate.Designer.cs">
-      <DependentUpon>202607191336497_InitialCreate.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\202607221617059_UpdateDatabase.cs" />
-    <Compile Include="Migrations\202607221617059_UpdateDatabase.Designer.cs">
-      <DependentUpon>202607221617059_UpdateDatabase.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\202607221747400_AddDropOffPointToOfficer.cs" />
-    <Compile Include="Migrations\202607221747400_AddDropOffPointToOfficer.Designer.cs">
-      <DependentUpon>202607221747400_AddDropOffPointToOfficer.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\202607231451146_AddReferralTransaction.cs" />
-    <Compile Include="Migrations\202607231451146_AddReferralTransaction.Designer.cs">
-      <DependentUpon>202607231451146_AddReferralTransaction.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\202607252020346_AddAdminAudit.cs" />
-    <Compile Include="Migrations\202607252020346_AddAdminAudit.Designer.cs">
-      <DependentUpon>202607252020346_AddAdminAudit.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\202607252036226_AddAdminAudit1.cs" />
-    <Compile Include="Migrations\202607252036226_AddAdminAudit1.Designer.cs">
-      <DependentUpon>202607252036226_AddAdminAudit1.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\202607252152517_CommunityStatus.cs" />
-    <Compile Include="Migrations\202607252152517_CommunityStatus.Designer.cs">
-      <DependentUpon>202607252152517_CommunityStatus.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\202607260812544_AddCommunityToResident.cs" />
-    <Compile Include="Migrations\202607260812544_AddCommunityToResident.Designer.cs">
-      <DependentUpon>202607260812544_AddCommunityToResident.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\202607261246181_AddAnnouncements.cs" />
-    <Compile Include="Migrations\202607261246181_AddAnnouncements.Designer.cs">
-      <DependentUpon>202607261246181_AddAnnouncements.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\202607262220158_AddIoTModels.cs" />
-    <Compile Include="Migrations\202607262220158_AddIoTModels.Designer.cs">
-      <DependentUpon>202607262220158_AddIoTModels.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\202607271202502_AddAssignedOfficerToAlert.cs" />
-    <Compile Include="Migrations\202607271202502_AddAssignedOfficerToAlert.Designer.cs">
-      <DependentUpon>202607271202502_AddAssignedOfficerToAlert.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\202607272016256_AddNotifications.cs" />
-    <Compile Include="Migrations\202607272016256_AddNotifications.Designer.cs">
-      <DependentUpon>202607272016256_AddNotifications.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\202607291242546_FixDecimalPrecision.cs" />
-    <Compile Include="Migrations\202607291242546_FixDecimalPrecision.Designer.cs">
-      <DependentUpon>202607291242546_FixDecimalPrecision.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\202607291543542_UpdateDatabaseSchema.cs" />
-    <Compile Include="Migrations\202607291543542_UpdateDatabaseSchema.Designer.cs">
-      <DependentUpon>202607291543542_UpdateDatabaseSchema.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\202607291626306_first1.cs" />
-    <Compile Include="Migrations\202607291626306_first1.Designer.cs">
-      <DependentUpon>202607291626306_first1.cs</DependentUpon>
+    <Compile Include="Migrations\202607300643157_InitialCreate.cs" />
+    <Compile Include="Migrations\202607300643157_InitialCreate.Designer.cs">
+      <DependentUpon>202607300643157_InitialCreate.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
@@ -375,7 +315,7 @@
     <Content Include="Views\Resident\Notifications.cshtml" />
     <Content Include="Views\Resident\RedeemPoints.cshtml" />
     <Content Include="Views\Resident\RedeemConfirmation.cshtml" />
-    <Content Include="Views\Resident\RedeemHistory.cshtml" />
+    <Content Include="Views\Resident\RedemptionHistory.cshtml" />
     <Content Include="Views\Admin\ManageRedemptionRequests.cshtml" />
     <Content Include="Views\Admin\ManageRedemptionOptions.cshtml" />
     <Content Include="Views\Admin\CreateRedemptionOption.cshtml" />
@@ -384,6 +324,7 @@
     <Content Include="Views\SystemConfigurations\Details.cshtml" />
     <Content Include="Views\SystemConfigurations\Edit.cshtml" />
     <Content Include="Views\SystemConfigurations\Index.cshtml" />
+    <Content Include="Views\Admin\ExportRedemptions.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
@@ -416,53 +357,8 @@
     <Content Include="Scripts\jquery-3.7.0.min.map" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\202607181514476_first.resx">
-      <DependentUpon>202607181514476_first.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202607191336497_InitialCreate.resx">
-      <DependentUpon>202607191336497_InitialCreate.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202607221617059_UpdateDatabase.resx">
-      <DependentUpon>202607221617059_UpdateDatabase.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202607221747400_AddDropOffPointToOfficer.resx">
-      <DependentUpon>202607221747400_AddDropOffPointToOfficer.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202607231451146_AddReferralTransaction.resx">
-      <DependentUpon>202607231451146_AddReferralTransaction.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202607252020346_AddAdminAudit.resx">
-      <DependentUpon>202607252020346_AddAdminAudit.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202607252036226_AddAdminAudit1.resx">
-      <DependentUpon>202607252036226_AddAdminAudit1.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202607252152517_CommunityStatus.resx">
-      <DependentUpon>202607252152517_CommunityStatus.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202607260812544_AddCommunityToResident.resx">
-      <DependentUpon>202607260812544_AddCommunityToResident.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202607261246181_AddAnnouncements.resx">
-      <DependentUpon>202607261246181_AddAnnouncements.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202607262220158_AddIoTModels.resx">
-      <DependentUpon>202607262220158_AddIoTModels.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202607271202502_AddAssignedOfficerToAlert.resx">
-      <DependentUpon>202607271202502_AddAssignedOfficerToAlert.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202607272016256_AddNotifications.resx">
-      <DependentUpon>202607272016256_AddNotifications.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202607291242546_FixDecimalPrecision.resx">
-      <DependentUpon>202607291242546_FixDecimalPrecision.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202607291543542_UpdateDatabaseSchema.resx">
-      <DependentUpon>202607291543542_UpdateDatabaseSchema.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202607291626306_first1.resx">
-      <DependentUpon>202607291626306_first1.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\202607300643157_InitialCreate.resx">
+      <DependentUpon>202607300643157_InitialCreate.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

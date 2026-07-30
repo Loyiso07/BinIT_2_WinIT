@@ -28,11 +28,17 @@ namespace BinIT2WinIT.Models
 
     public class RedemptionHistoryViewModel
     {
+        public RedemptionHistoryViewModel()
+        {
+            Requests = new List<RedemptionRequest>();
+            TotalPointsRedeemed = 0;
+            TotalDiscountsReceived = 0m;
+        }
+
         public List<RedemptionRequest> Requests { get; set; }
         public int TotalPointsRedeemed { get; set; }
         public decimal TotalDiscountsReceived { get; set; }
     }
-
     public class AdminRedemptionViewModel
     {
         public List<RedemptionRequest> PendingRequests { get; set; }
