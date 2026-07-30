@@ -244,6 +244,7 @@
     <None Include=".dockerignore">
       <DependentUpon>Dockerfile</DependentUpon>
     </None>
+    <None Include="Properties\PublishProfiles\BinIT2WinIT - Web Deploy.pubxml" />
     <None Include="Scripts\jquery-3.7.0.intellisense.js" />
     <Content Include="Scripts\dark-mode.js" />
     <Content Include="Scripts\jquery-3.7.0.js" />
